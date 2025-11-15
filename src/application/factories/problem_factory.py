@@ -13,12 +13,12 @@ class ProblemFactory(IProblemFactory):
     Factory for creating Problem entities from raw data.
     """
 
-    def create_problem(self, raw_ Dict[str, Any]) -> Problem: # Исправленная строка
+    def create_problem(self, raw_data: Dict[str, Any]) -> Problem: # Исправленная сигнатура
         """
         Create a Problem entity from raw scraped data.
 
         Args:
-            raw_ Dictionary containing raw data extracted from HTML (e.g., by PageScrapingService).
+            raw_data: Dictionary containing raw data extracted from HTML (e.g., by PageScrapingService).
 
         Returns:
             A fully constructed Problem entity.
@@ -39,4 +39,3 @@ class ProblemFactory(IProblemFactory):
             exam_part=raw_data.get("exam_part"),
             fipi_proj_id=raw_data.get("fipi_proj_id"),
         )
-
