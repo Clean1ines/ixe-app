@@ -2,15 +2,13 @@
 Domain interface for HTML processing operations.
 
 This interface defines the contract for processing a single HTML block pair
-(header_container, qblock) representing an EGE problem, allowing the domain layer
-to remain independent of the specific HTML parsing and extraction implementation.
+(header_container, qblock), allowing the domain layer to remain independent of the
+specific HTML parsing and extraction implementation.
+It mirrors the signature of the old processors from ~/iXe for compatibility.
 """
 import abc
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 from bs4.element import Tag
-from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader # Импортируем новый интерфейс
-from src.application.value_objects.scraping.subject_info import SubjectInfo # Импортируем VO
 
 
 class IHTMLProcessor(abc.ABC):
@@ -18,8 +16,8 @@ class IHTMLProcessor(abc.ABC):
     Domain interface for processing a single HTML block pair (header_container, qblock).
 
     This interface abstracts the logic for extracting structured data (like text, images,
-    KES/KOS codes, answers, etc.) from a specific HTML structure representing one problem.
-    It also handles downloading associated assets using IAssetDownloader.
+    KES/KOS codes, answers, etc.) from a specific HTML structure representing one problem block.
+    It expects the same signature as the old processors from ~/iXe.
     """
 
     @abc.abstractmethod
@@ -28,11 +26,8 @@ class IHTMLProcessor(abc.ABC):
         header_container: Tag,
         qblock: Tag,
         block_index: int,
-        subject_info: SubjectInfo,
+        subject: str,
         base_url: str,
-        run_folder_page: Path,
-        asset_downloader: IAssetDownloader, # Принимаем интерфейс загрузчика
-        files_location_prefix: str = "",
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -42,12 +37,9 @@ class IHTMLProcessor(abc.ABC):
             header_container: The BeautifulSoup Tag containing the header panel.
             qblock: The BeautifulSoup Tag containing the question block.
             block_index: The index of this block in the overall page processing.
-            subject_info: The SubjectInfo object containing subject details.
+            subject: The subject name (e.g., "math", "informatics").
             base_url: The base URL of the scraped page (e.g., https://ege.fipi.ru/bank/{proj_id}).
-            run_folder_page: Path to the run folder for this page's assets (e.g., downloaded images/files).
-            asset_downloader: Service for downloading assets (implements IAssetDownloader).
-            files_location_prefix: Prefix for file paths in the output (relative to run_folder_page or a global assets dir).
-            **kwargs: Additional keyword arguments (e.g., for passing other services if needed later).
+            **kwargs: Additional keyword arguments (e.g., for passing asset downloader, run folders).
 
         Returns:
             A dictionary containing structured data extracted from the block.
@@ -57,7 +49,7 @@ class IHTMLProcessor(abc.ABC):
             - 'problem_id': str
             - 'text': str
             - 'answer': Optional[str]
-            - 'images': List[str] (local relative paths from run_folder_page/assets or global assets dir)
+            - 'images': List[str] (local relative paths)
             - 'files': List[str] (local relative paths)
             - 'kes_codes': List[str]
             - 'topics': List[str]
@@ -68,3 +60,4 @@ class IHTMLProcessor(abc.ABC):
             - 'metadata': Dict[str, Any] (for extra info)
         """
         pass
+

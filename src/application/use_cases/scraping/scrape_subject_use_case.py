@@ -4,20 +4,24 @@ Use Case for scraping a single subject.
 This use case coordinates the scraping process for a single subject,
 handling all the business logic while delegating infrastructure concerns
 to appropriate adapters.
-It integrates IAssetDownloader via PageScrapingService.
+It now integrates PageScrapingService which uses concrete HTML processors
+and an asset downloader adapter.
+All problems are saved to a single shared database.
 """
 import logging
-# import shutil # Удаляем, так как UseCase не управляет файлами напрямую
+# import shutil # Убираем, так как больше не удаляем/создаём директории для каждого предмета отдельно
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
-from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader # Импортируем новый интерфейс
+from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader # Импортируем интерфейс
 from src.domain.interfaces.repositories.i_problem_repository import IProblemRepository
-from src.application.value_objects.scraping.subject_info import SubjectInfo # Исправленный импорт
-from src.application.value_objects.scraping.scraping_config import ScrapingConfig # Исправленный импорт
+from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.application.value_objects.scraping.scraping_config import ScrapingConfig
 from src.application.value_objects.scraping.scraping_result import ScrapingResult
 from src.application.services.page_scraping_service import PageScrapingService # Импортируем обновлённый сервис
+from src.application.factories.problem_factory import ProblemFactory # Импортируем фабрику
+from src.domain.models.problem import Problem # ИМПОРТИРУЕМ PROBLEM ДЛЯ АНОТАЦИИ ТИПА
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +30,13 @@ class ScrapeSubjectUseCase:
     Use Case for scraping a single subject.
 
     Business Rules:
-    - Handles both initial scraping and updates
+    - Handles both initial scraping and updates for a single subject
     - Manages resource cleanup properly (delegated to lower layers)
     - Provides progress reporting
     - Handles errors gracefully
     - Respects scraping configuration
-    - Ensures data integrity
+    - Ensures data integrity in the shared database
+    - Operates on a single, shared database for all subjects
     """
 
     def __init__(
@@ -47,8 +52,8 @@ class ScrapeSubjectUseCase:
         Args:
             browser_service: Service for browser management (implements IBrowserService)
             asset_downloader: Service for downloading assets (implements IAssetDownloader)
-            problem_repository: Service for problem persistence (implements IProblemRepository)
-            page_scraping_service: Service for page scraping logic and problem creation (implements scraping logic)
+            problem_repository: Service for problem persistence (implements IProblemRepository) - operates on SHARED DB
+            page_scraping_service: Service for page scraping logic and problem creation (uses concrete processors)
         """
         self.browser_service = browser_service
         self.asset_downloader = asset_downloader # Сохраняем
@@ -57,8 +62,8 @@ class ScrapeSubjectUseCase:
 
     async def execute(
         self,
-        subject_info: SubjectInfo, # Используем правильный импорт
-        config: ScrapingConfig # Используем правильный импорт
+        subject_info: SubjectInfo,
+        config: ScrapingConfig
     ) -> ScrapingResult:
         """
         Execute the scraping use case.
@@ -73,9 +78,9 @@ class ScrapeSubjectUseCase:
         Business Rules:
         - Checks existing data before scraping
         - Initializes database if needed (delegated)
-        - Handles force restart option (affects scraping/re-saving logic, not DB/file deletion here)
+        - Handles force restart option (affects scraping/re-saving logic, potentially passed to repository)
         - Provides detailed progress reporting
-        - Ensures proper resource cleanup (delegated)
+        - Ensures proper resource cleanup (delegated to services/adapters)
         """
         logger.info(f"Starting scraping for subject: {subject_info.official_name}")
         start_time = datetime.now()
@@ -85,32 +90,37 @@ class ScrapeSubjectUseCase:
         total_problems_saved = 0
 
         try:
-            # --- LOGIC: Setup directories (if needed for caching, separate concern - likely handled by PageScrapingService or BrowserService) ---
-            # We DO NOT manage a subject-specific data directory like 'data/{alias}/{year}' directly here anymore.
+            # --- LOGIC: NO LONGER managing subject-specific data directories like 'data/{alias}/{year}' ---
             # Raw HTML saving/caching logic (if any) should be handled by PageScrapingService or BrowserService if necessary.
-            # The primary persistence (Problems) is handled by IProblemRepository.
-            # Output directory setup is now likely the responsibility of PageScrapingService or an infrastructure component called by this UC.
+            # The primary persistence (Problems) is handled by IProblemRepository, which uses a SHARED database.
+            # Output directory setup for *assets* of *this page run* is handled by PageScrapingService or internally by processors if needed.
 
             # Determine the base URL for the subject's project
             base_url = f"https://ege.fipi.ru/bank/{subject_info.proj_id}" # Example base URL construction
 
-            # Scrape initial page (using real PageScrapingService)
+            # Scrape initial page (using real PageScrapingService with processors)
             init_url = f"{base_url}?page=init" # Construct URL for init page
+            # PageScrapingService receives run_folder_page for *this specific page's assets* if needed by processors/downloader
+            # For a shared DB approach, the subject context is passed via subject_info and base_url
             try:
                 init_problems = await self.page_scraping_service.scrape_page(
                     url=init_url,
                     subject_info=subject_info,
                     base_url=base_url,
                     timeout=config.timeout_seconds,
-                    # run_folder_page и files_location_prefix теперь должны передаваться внутрь PageScrapingService,
-                    # или PageScrapingService сам решает где хранить ассеты страницы.
-                    # Для тестов PageScrapingService может использовать мок-директорию.
+                    # run_folder_page и files_location_prefix теперь могут быть определены
+                    # внутри PageScrapingService или его инфраструктурных компонентов
+                    # или передаваться отсюда, если нужно централизованно управлять.
+                    # Предположим PageScrapingService сам решает где хранить ассеты страницы.
+                    # Но для именования файлов/путей внутри HTML может потребоваться префикс.
+                    # Передадим базовый префикс, специфичный для этого запуска скрэйпинга предмета.
+                    # Например, 'assets/math_2026/init_page_' или использовать block_index внутри PS_Service
                 )
                 init_result = self._create_page_result("init", init_problems, subject_info)
                 page_results.append(init_result)
                 total_problems_found += len(init_problems)
-                # Pass the config.force_restart flag to _save_problems
-                total_problems_saved += await self._save_problems(init_problems, force_update=config.force_restart) # Save and count successes
+                # Save the problems found on the init page using the SHARED repository
+                total_problems_saved += await self._save_problems(init_problems, force_update=config.force_restart) # Pass force_update flag
 
             except Exception as e:
                 logger.error(f"Error scraping init page for {subject_info.official_name}: {e}", exc_info=True)
@@ -154,8 +164,8 @@ class ScrapeSubjectUseCase:
                     page_results.append(page_result)
 
                     total_problems_found += len(page_problems)
-                    # Pass the config.force_restart flag to _save_problems for each page
-                    total_problems_saved += await self._save_problems(page_problems, force_update=config.force_restart) # Save and count successes
+                    # Save the problems found on this page using the SHARED repository
+                    total_problems_saved += await self._save_problems(page_problems, force_update=config.force_restart) # Pass force_update flag
 
                     # Update empty page counter (example logic)
                     if len(page_problems) == 0:
@@ -223,9 +233,9 @@ class ScrapeSubjectUseCase:
                 }
             )
 
-    async def _save_problems(self, problems: List['Problem'], force_update: bool = False) -> int: # Принимаем force_update
+    async def _save_problems(self, problems: List['Problem'], force_update: bool = False) -> int: # ИСПРАВЛЕНО: Используем строковую аннотацию
         """
-        Save a list of problems to the repository and return the count of successfully saved ones.
+        Save a list of problems to the SHARED repository and return the count of successfully saved ones.
 
         Args:
             problems: List of Problem entities to save.
@@ -238,14 +248,15 @@ class ScrapeSubjectUseCase:
         for problem in problems:
             try:
                 # Pass the force_update flag to the repository
+                # The repository (which uses the shared DB) handles the save operation
                 await self.problem_repository.save(problem, force_update=force_update) # Передаём флаг
                 saved_count += 1
             except Exception as e:
-                logger.error(f"Failed to save problem {problem.problem_id}: {e}")
+                logger.error(f"Failed to save problem {problem.problem_id} to shared DB: {e}")
                 # Consider adding to errors list if needed
         return saved_count
 
-    def _create_page_result(self, page_number: str, problems: List['Problem'], subject_info: SubjectInfo) -> Dict[str, Any]: # Используем строковую аннотацию
+    def _create_page_result(self, page_number: str, problems: List['Problem'], subject_info: SubjectInfo) -> Dict[str, Any]: # ИСПРАВЛЕНО: Используем строковую аннотацию
         """
         Create a page result dictionary from scraped problems.
 
