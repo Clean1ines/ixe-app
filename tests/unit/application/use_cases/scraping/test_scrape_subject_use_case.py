@@ -1,13 +1,15 @@
 """
 Unit tests for the ScrapeSubjectUseCase.
 
-These tests mock dependencies (IBrowserService, IAssetDownloader, IProblemRepository, PageScrapingService) to isolate
+These tests mock dependencies (IPageScrapingService, IProblemRepository) to isolate
 the use case logic.
+The tests now reflect the updated dependency structure of ScrapeSubjectUseCase,
+which delegates page scraping and problem creation to PageScrapingService.
 """
 import pytest
 import pytest_asyncio
 import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from datetime import datetime
 from pathlib import Path # Импортируем Path для теста с force_restart
 
@@ -16,6 +18,7 @@ from src.application.value_objects.scraping.subject_info import SubjectInfo
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
 from src.application.value_objects.scraping.scraping_result import ScrapingResult
 from src.application.services.page_scraping_service import PageScrapingService # Импортируем для типа мока
+from src.domain.interfaces.repositories.i_problem_repository import IProblemRepository # Импортируем интерфейс
 from src.domain.models.problem import Problem # Импортируем для создания моков или реальных объектов
 
 
@@ -23,35 +26,24 @@ class TestScrapeSubjectUseCase:
     """Tests for ScrapeSubjectUseCase."""
 
     @pytest.fixture
-    def mock_browser_service(self):
-        """Fixture to create a mock IBrowserService."""
-        return AsyncMock()
-
-    @pytest.fixture
-    def mock_asset_downloader(self):
-        """Fixture to create a mock IAssetDownloader."""
-        return AsyncMock()
-
-    @pytest.fixture
-    def mock_problem_repository(self):
-        """Fixture to create a mock IProblemRepository."""
-        return AsyncMock()
-
-    @pytest.fixture
     def mock_page_scraping_service(self):
-        """Fixture to create a mock PageScrapingService."""
+        """Fixture to create a mock IPageScrapingService."""
         # Use AsyncMock because its methods like scrape_page are async
         return AsyncMock(spec=PageScrapingService)
 
     @pytest.fixture
-    def use_case(self, mock_browser_service, mock_asset_downloader, mock_problem_repository, mock_page_scraping_service):
+    def mock_problem_repository(self):
+        """Fixture to create a mock IProblemRepository."""
+        # Use AsyncMock because its methods like save are async
+        return AsyncMock(spec=IProblemRepository)
+
+    @pytest.fixture
+    def use_case(self, mock_page_scraping_service, mock_problem_repository):
         """Fixture to create a ScrapeSubjectUseCase instance with mocked dependencies."""
         return ScrapeSubjectUseCase(
-            browser_service=mock_browser_service,
-            asset_downloader=mock_asset_downloader, # Передаём мок IAssetDownloader
-            problem_repository=mock_problem_repository,
-            page_scraping_service=mock_page_scraping_service
-            # problem_factory is now inside PageScrapingService, so we don't pass it directly here
+            page_scraping_service=mock_page_scraping_service,
+            problem_repository=mock_problem_repository
+            # browser_service, asset_downloader, problem_factory больше не передаются напрямую
         )
 
     @pytest.fixture
@@ -89,12 +81,17 @@ class TestScrapeSubjectUseCase:
         problem_2 = Problem(problem_id="page2_789", subject_name="math", text="Page 2 problem text.", source_url="https://example.com/p2")
 
         # Mock the scrape_page method to return lists of problems for different pages
+        # The base URL is constructed inside the UseCase based on subject_info
+        base_url = f"https://ege.fipi.ru/bank/{subject_info.proj_id}"
         mock_page_scraping_service.scrape_page.side_effect = [
-            [problem_init], # For init page
-            [problem_1],    # For page 1
+            [problem_init], # For init page (url = base_url + "?page=init")
+            [problem_1],    # For page 1 (url = base_url + "?page=1")
             [],             # For page 2 (empty, triggers empty_count)
             []              # For page 3 (empty, triggers stop due to max_empty_pages)
         ]
+
+        # Mock the repository save method to return True for success
+        mock_problem_repository.save.return_value = None # save is an async void method, assuming success if no exception
 
         # Mock _determine_last_page to return None to trigger fallback logic based on max_empty_pages
         with patch.object(use_case, '_determine_last_page', return_value=None):
@@ -105,6 +102,7 @@ class TestScrapeSubjectUseCase:
         # init page + page 1 + page 2 (empty) + page 3 (empty, stops)
         # Problems found: 1 (init) + 1 (p1) + 0 (p2) + 0 (p3) = 2
         # Problems saved: Depends on _save_problems, which calls problem_repository.save
+        # Assuming all saves succeed in this test scenario
         expected_total_found = 2
         expected_total_saved = 2 # Assuming all saves succeed in this test scenario
 
@@ -113,14 +111,65 @@ class TestScrapeSubjectUseCase:
         assert result.total_pages == 4  # init + 1 + 2 + 3
         assert result.total_problems_found == expected_total_found
         assert result.total_problems_saved == expected_total_saved
-        # Verify that PageScrapingService was called correctly
+        # Verify that IPageScrapingService was called correctly
         assert mock_page_scraping_service.scrape_page.call_count == 4 # Called 4 times
-        # Verify that problem_repository.save was called for each problem found (based on _save_problems logic)
+        # Verify calls to scrape_page were made with the correct arguments (URLs, subject_info, etc.)
+        expected_calls = [
+            # Calls are made with the constructed URL based on base_url, page number, and subject_info
+            # Also with timeout from config
+            # And potentially run_folder_page/files_location_prefix if UseCase passes them down
+            # For now, let's check the URL construction and subject_info
+            # Init page
+            # The URL construction is: f"{base_url}?page=init"
+            # base_url = f"https://ege.fipi.ru/bank/{subject_info.proj_id}" = "https://ege.fipi.ru/bank/12345"
+            # So URL for init should be "https://ege.fipi.ru/bank/12345?page=init"
+            # But the old processors expected 'page' as a query param, new ones might expect just '?init' or similar.
+            # Let's stick to the UseCase's logic: init_url = f"{base_url}?page=init"
+            # And numbered: page_url = f"{base_url}?page={page_num}"
+            # So, the expected calls should be:
+            # 1. scrape_page(url="https://ege.fipi.ru/bank/12345?page=init", subject_info=subject_info, base_url=base_url, timeout=...)
+            # 2. scrape_page(url="https://ege.fipi.ru/bank/12345?page=1", subject_info=subject_info, base_url=base_url, timeout=...)
+            # 3. scrape_page(url="https://ege.fipi.ru/bank/12345?page=2", subject_info=subject_info, base_url=base_url, timeout=...)
+            # 4. scrape_page(url="https://ege.fipi.ru/bank/12345?page=3", subject_info=subject_info, base_url=base_url, timeout=...)
+            # Let's assert the calls were made with correct subject_info and base_url, and the expected number of times
+            # We can't easily assert the exact URL without mocking the URL construction inside the UseCase,
+            # unless we make the URL construction a separate method和服务.
+            # For now, we'll rely on the call count and the fact that subject_info and base_url are passed correctly.
+            # The PageScrapingService test will verify the exact URL construction and scraping logic.
+            # Here we test the *coordination* logic of ScrapeSubjectUseCase.
+            # So, we assert the service was called the expected number of times.
+            # And that save was called for the expected number of problems.
+        ]
+        # Check the arguments passed to scrape_page
+        # This requires checking the call_args_list of the mock
+        call_args_list = mock_page_scraping_service.scrape_page.call_args_list
+        assert len(call_args_list) == 4 # 4 calls expected
+
+        # Example: Check the first call (init page)
+        first_call_args, first_call_kwargs = call_args_list[0]
+        # assert first_call_kwargs['url'] == f"{base_url}?page=init" # This would require knowing the exact URL construction inside UC
+        assert first_call_kwargs['subject_info'] == subject_info
+        assert first_call_kwargs['base_url'] == base_url
+        assert first_call_kwargs['timeout'] == scraping_config.timeout_seconds
+        # Check the first result was for init page
+        assert result.page_results[0]['page_number'] == 'init'
+
+        # Verify that IProblemRepository.save was called for each problem found (based on _save_problems logic)
+        # It should be called twice: once for problem_init, once for problem_1
+        # The call count should match the total number of problems returned by scrape_page across all calls
         assert mock_problem_repository.save.call_count == expected_total_saved
-        # Check calls to save were made with the correct problems
-        expected_calls = [problem_init, problem_1] # Problems that were found and should be saved
-        actual_calls = [call.args[0] for call in mock_problem_repository.save.call_args_list]
-        assert actual_calls == expected_calls
+        # Check calls to save were made with the correct problems and potentially the force_update flag
+        expected_save_calls = [
+            ((problem_init,), {'force_update': scraping_config.force_restart}), # Call with problem and force_update from config
+            ((problem_1,), {'force_update': scraping_config.force_restart}),
+        ]
+        actual_save_calls = mock_problem_repository.save.call_args_list
+        assert len(actual_save_calls) == len(expected_save_calls)
+        for i, (expected_args, expected_kwargs) in enumerate(expected_save_calls):
+             actual_call = actual_save_calls[i]
+             assert actual_call.args == expected_args
+             assert actual_call.kwargs.get('force_update') == expected_kwargs['force_update']
+
 
     # Example of testing error handling within the use case
     @pytest.mark.asyncio
@@ -166,8 +215,8 @@ class TestScrapeSubjectUseCase:
 
         # Verify that the result is successful (assuming no other errors)
         assert result.success is True
-        # Verify that the problem was saved
-        # Crucially, check that save was called with force_update=True
+        # Verify that the problem was saved with force_update=True
+        # Check that the save call was made with force_update=True
         mock_problem_repository.save.assert_called_once_with(mock_problem, force_update=True) # Проверяем, что вызвано с force_update=True
 
 if __name__ == "__main__":

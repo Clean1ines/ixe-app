@@ -10,7 +10,7 @@ adapting the new IAssetDownloader to the old processor interface expectations vi
 import logging
 import asyncio
 from pathlib import Path
-from typing import List, Tuple, Dict, Any, Optional
+from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup, Tag
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader # Импортируем интерфейс
@@ -25,7 +25,7 @@ from src.infrastructure.processors.html.task_info_processor import TaskInfoProce
 from src.infrastructure.processors.html.input_field_remover import InputFieldRemover
 from src.infrastructure.processors.html.mathml_remover import MathMLRemover
 from src.infrastructure.processors.html.unwanted_element_remover import UnwantedElementRemover
-# Импортируем адаптер с правильным именем
+# Импортируем адаптер
 from src.infrastructure.adapters.external_services.asset_downloader_adapter import AssetDownloaderAdapter
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class PageScrapingService:
     Business Rules:
     - Coordinates the scraping of a single page
     - Handles browser management for page navigation via IBrowserService
-    - Processes HTML content using concrete infrastructure processors from ~/ixe/src/infrastructure/processors/html/
+    - Processes HTML content using a chain of concrete infrastructure processors from ~/ixe/src/infrastructure/processors/html/
     - Adapts new IAssetDownloader to old processor interface expectations via AssetDownloaderAdapter
     - Converts processed data into domain entities using IProblemFactory
     - Manages file storage for downloaded assets via the shared IAssetDownloader (through the adapter)
@@ -78,12 +78,12 @@ class PageScrapingService:
         # Collect them in a list for sequential processing if needed
         # Define a sensible order (e.g., download assets first, then clean, then modify attributes)
         self.processors = [
-            self.mathml_remover, # Remove MathML early
-            self.unwanted_element_remover, # Remove unwanted elements early
-            self.image_processor, # Download images and update src - requires downloader adapter
-            self.file_processor, # Download files and update href - requires downloader adapter
-            self.task_info_processor, # Update task info onclick
-            self.input_field_remover, # Remove input fields last
+            self.mathml_remover,
+            self.unwanted_element_remover,
+            self.image_processor,
+            self.file_processor,
+            self.task_info_processor,
+            self.input_field_remover,
         ]
 
     async def scrape_page(
@@ -117,7 +117,7 @@ class PageScrapingService:
             # based on subject and page number, or rely on the AssetDownloaderAdapterForProcessors's default.
             # For now, let's assume PageScrapingService receives the correct run_folder_page from ScrapeSubjectUseCase
             logger.warning(f"No run_folder_page provided for {url}. Asset saving might not be organized per page if processors rely on it.")
-            run_folder_page = Path(".") # Fallback, but this is bad practice if assets need per-page organization
+            run_folder_page = Path(".")
 
         # --- CREATE ADAPTER INSTANCE FOR OLD PROCESSORS ---
         # This adapter instance bridges the NEW IAssetDownloader impl and the OLD interface expected by processors.
@@ -326,7 +326,7 @@ class PageScrapingService:
             'files': files,
             'kes_codes': kes_codes,
             'topics': kes_codes[:], # For DB compatibility, topics often map to kes_codes
-            'kos_codes': kos_codes,
+            'kos_codes': kes_codes,
             'difficulty_level': difficulty_level,
             'task_number': task_number,
             'exam_part': exam_part,

@@ -13,7 +13,7 @@ class ProblemFactory(IProblemFactory):
     Factory for creating Problem entities from raw data.
     """
 
-    def create_problem(self, raw_data: Dict[str, Any]) -> Problem: # ИСПРАВЛЕНО: Полностью переписана сигнатура
+    def create_problem(self, raw_ Dict[str, Any]) -> Problem: # Исправленная строка
         """
         Create a Problem entity from raw scraped data.
 
@@ -23,25 +23,20 @@ class ProblemFactory(IProblemFactory):
         Returns:
             A fully constructed Problem entity.
         """
-        # Map raw data dictionary keys to Problem entity fields
-        # This is where the mapping between scraped data structure and domain entity happens
-        # Validation of the raw data could also occur here if not done by processors or extraction step
         return Problem(
             problem_id=raw_data["problem_id"],
             subject_name=raw_data["subject_name"],
             text=raw_data["text"],
             source_url=raw_data["source_url"],
-            answer=raw_data.get("answer"), # Optional
-            images=raw_data.get("images", []), # Optional, default to []
-            files=raw_data.get("files", []), # Optional, default to []
-            kes_codes=raw_data.get("kes_codes", []), # Optional, default to []
-            topics=raw_data.get("topics", []), # Optional, default to []
-            kos_codes=raw_data.get("kos_codes", []), # Optional, default to []
-            difficulty_level=raw_data.get("difficulty_level"), # Optional
-            task_number=raw_data.get("task_number"), # Optional
-            exam_part=raw_data.get("exam_part"), # Optional
-            fipi_proj_id=raw_data.get("fipi_proj_id"), # Optional
-            # Assign default values for non-optional fields if not present in raw_data (though they should be)
-            # form_id=raw_data.get("form_id"), # Optional
-            # created_at и updated_at будут установлены в __post_init__ Problem
+            answer=raw_data.get("answer"),
+            images=raw_data.get("images", []),
+            files=raw_data.get("files", []),
+            kes_codes=raw_data.get("kes_codes", []),
+            topics=raw_data.get("topics", []),
+            kos_codes=raw_data.get("kos_codes", []),
+            difficulty_level=raw_data.get("difficulty_level"),
+            task_number=raw_data.get("task_number"),
+            exam_part=raw_data.get("exam_part"),
+            fipi_proj_id=raw_data.get("fipi_proj_id"),
         )
+
