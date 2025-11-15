@@ -3,12 +3,12 @@ Integration tests for the BrowserPoolServiceAdapter.
 These tests use real BrowserManager instances managed by the pool.
 """
 import pytest
-import pytest_asyncio # Добавляем импорт
+import pytest_asyncio
 import asyncio
 from src.infrastructure.adapters.browser_pool_service_adapter import BrowserPoolServiceAdapter
 from src.infrastructure.browser_management.browser_manager import BrowserManager
 
-@pytest_asyncio.fixture # Используем pytest_asyncio.fixture
+@pytest_asyncio.fixture
 async def browser_pool_adapter():
     """Fixture to create and initialize a BrowserPoolServiceAdapter."""
     adapter = BrowserPoolServiceAdapter(pool_size=2)
@@ -54,12 +54,17 @@ async def test_browser_pool_adapter_get_and_release_browser(browser_pool_adapter
 @pytest.mark.asyncio
 async def test_browser_pool_adapter_get_page_content_convenience(browser_pool_adapter):
     """Test the convenience method get_page_content."""
-    url = "https://httpbin.org/json" # A simple JSON page
+    # Use a more stable endpoint that returns predictable content
+    # httpbin.org/status/200 always returns an empty 200 OK response page
+    # Let's use httpbin.org/html which should return a simple HTML page reliably
+    url = "https://httpbin.org/html"
     content = await browser_pool_adapter.get_page_content(url)
 
     assert content is not None
     assert isinstance(content, str)
-    assert "slideshow" in content or "{\n" in content # Basic check for JSON content
+    # Check for basic HTML structure instead of specific content that might change
+    assert "<html>" in content.lower() or "<!doctype html" in content.lower()
+    print(f"Successfully fetched HTML content from {url}, length: {len(content)} chars.")
 
 @pytest.mark.asyncio
 async def test_browser_pool_adapter_concurrent_access_improved(browser_pool_adapter):
@@ -70,7 +75,8 @@ async def test_browser_pool_adapter_concurrent_access_improved(browser_pool_adap
     """
     # Use a moderate number of requests relative to pool size
     # Pool size is 2, 4 requests means potentially 2 running concurrently, then 2 more
-    urls = ["https://httpbin.org/uuid"] * 4 # UUID endpoint is relatively quick
+    # Use a stable endpoint like /uuid which is relatively quick
+    urls = ["https://httpbin.org/uuid"] * 4
 
     # Run get_page_content for multiple URLs concurrently using gather
     tasks = [browser_pool_adapter.get_page_content(url, timeout=10) for url in urls]
@@ -93,7 +99,6 @@ async def test_browser_pool_adapter_concurrent_access_improved(browser_pool_adap
     # This confirms the pool handled the concurrent load without crashing
     assert len(successful_results) == len([r for r in results if not isinstance(r, Exception)])
     print(f"All {len(results)} concurrent requests handled successfully or with expected errors.")
-
 
 # Note: Testing release_browser in a concurrent scenario implicitly happens
 # when get_page_content calls it internally using 'finally' block.

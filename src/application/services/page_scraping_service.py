@@ -4,13 +4,13 @@ Application service for page scraping operations.
 This service coordinates the scraping of individual pages, handling the interaction
 between browser management (via IBrowserService) and converting results into
 domain entities (via IProblemFactory).
-It integrates the concrete HTML processors from the infrastructure layer,
-adapting the new IAssetDownloader to the old processor interface expectations.
+It now integrates the concrete HTML processors from the infrastructure layer,
+adapting the new IAssetDownloader to the old processor interface expectations via AssetDownloaderAdapter.
 """
 import logging
 import asyncio
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Tuple, Dict, Any, Optional
 from bs4 import BeautifulSoup, Tag
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader # Импортируем интерфейс
@@ -19,13 +19,13 @@ from src.domain.models.problem import Problem # Импортируем доме�
 from src.application.value_objects.scraping.subject_info import SubjectInfo # Импортируем VO
 
 # Импортируем конкретные процессоры из инфраструктуры
-from src.infrastructure.processors.html.image_processor import ImageScriptProcessor
+from src.infrastructure.processors.html.image_script_processor import ImageScriptProcessor
 from src.infrastructure.processors.html.file_link_processor import FileLinkProcessor
 from src.infrastructure.processors.html.task_info_processor import TaskInfoProcessor
 from src.infrastructure.processors.html.input_field_remover import InputFieldRemover
 from src.infrastructure.processors.html.mathml_remover import MathMLRemover
 from src.infrastructure.processors.html.unwanted_element_remover import UnwantedElementRemover
-# Импортируем адаптер
+# Импортируем адаптер с правильным именем
 from src.infrastructure.adapters.external_services.asset_downloader_adapter import AssetDownloaderAdapter
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ class PageScrapingService:
         Args:
             browser_service: Service for browser management (implements IBrowserService)
             asset_downloader_impl: Concrete implementation of IAssetDownloader (e.g., HTTPXAssetDownloaderAdapter)
-                                   This will be used by the AssetDownloaderAdapter.
+                                   This will be used by the AssetDownloaderAdapterForProcessors.
             problem_factory: Factory for creating domain problems (implements IProblemFactory)
         """
         self.browser_service = browser_service
@@ -114,12 +114,12 @@ class PageScrapingService:
 
         if run_folder_page is None:
             # If no specific folder is provided, PageScrapingService might decide on a default
-            # based on subject and page number, or rely on the AssetDownloaderAdapter's default.
+            # based on subject and page number, or rely on the AssetDownloaderAdapterForProcessors's default.
             # For now, let's assume PageScrapingService receives the correct run_folder_page from ScrapeSubjectUseCase
             logger.warning(f"No run_folder_page provided for {url}. Asset saving might not be organized per page if processors rely on it.")
             run_folder_page = Path(".") # Fallback, but this is bad practice if assets need per-page organization
 
-        # --- CREATE ADAPTER INSTANCE FOR THIS PAGE RUN ---
+        # --- CREATE ADAPTER INSTANCE FOR OLD PROCESSORS ---
         # This adapter instance bridges the NEW IAssetDownloader impl and the OLD interface expected by processors.
         # It's created per page run (or per block run within a page) to potentially use a specific run_folder_page for asset storage.
         # Creating a new adapter instance per call ensures isolation of context (like run_folder_page) for that specific scraping task.
@@ -337,4 +337,10 @@ class PageScrapingService:
 
         return raw_data
 
-    # Optional: Method to
+    # Optional: Method to determine last page number from pager element on the page
+    # This could also be a separate service or handled by ScrapeSubjectUseCase
+    # async def determine_last_page(self, proj_id: str) -> Optional[int]:
+    #     # Logic to scrape the initial page and parse the pager
+    #     # Similar to how it was done in ScrapeSubjectUseCase before
+    #     pass
+

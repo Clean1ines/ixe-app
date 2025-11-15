@@ -16,6 +16,16 @@ class IAssetDownloader(abc.ABC):
     """
 
     @abc.abstractmethod
+    async def initialize(self):
+        """Initialize the asset downloader resources."""
+        pass
+
+    @abc.abstractmethod
+    async def close(self):
+        """Close the asset downloader resources."""
+        pass
+
+    @abc.abstractmethod
     async def download(self, asset_url: str, destination_path: Path) -> bool:
         """
         Download an asset from the web and save it to a local destination.
