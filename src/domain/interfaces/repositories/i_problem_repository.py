@@ -16,12 +16,14 @@ class IProblemRepository:
     """
 
     @abstractmethod
-    async def save(self, problem: Problem) -> None:
+    async def save(self, problem: Problem, force_update: bool = False) -> None:
         """
         Save a Problem entity to the persistence layer.
 
         Args:
             problem: The Problem entity to save.
+            force_update: If True, forces updating the problem even if it already exists (e.g., for re-scraping).
+                          If False, applies default upsert logic.
         """
         raise NotImplementedError
 
@@ -44,7 +46,7 @@ class IProblemRepository:
         Retrieve all Problem entities associated with a specific subject name.
 
         Args:
-            subject_name: The name of the subject (e.g., "Mathematics").
+            subject_name: The name of the subject (e.g., "mathematics").
 
         Returns:
             A list of Problem entities for the given subject name.

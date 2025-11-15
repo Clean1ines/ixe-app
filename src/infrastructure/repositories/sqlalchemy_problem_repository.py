@@ -5,13 +5,10 @@ This class provides concrete implementations for persisting and retrieving
 Problem entities using a SQL database via SQLAlchemy.
 """
 import logging
-from datetime import datetime # Импортируем datetime
+from datetime import datetime
 from typing import Optional, List
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select, String, Integer, DateTime, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.dialects.sqlite import JSON  # For List[str] fields
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from src.domain.models.problem import Problem
 from src.domain.interfaces.repositories.i_problem_repository import IProblemRepository
 
@@ -19,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 # --- SQLAlchemy ORM Model (DBProblem) ---
 # This maps the Problem entity to a database table structure.
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import String, Integer, DateTime, func
+from sqlalchemy.dialects.sqlite import JSON  # For List[str] fields
 
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy ORM models in this module."""
@@ -50,11 +50,11 @@ class DBProblem(Base):
     # Extracted fields
     answer: Mapped[Optional[str]] = mapped_column(String, nullable=True)           # Maps to Problem.answer
     # Use JSON type for List[str] fields
-    images: Mapped[List[str]] = mapped_column(JSON, default=[])                   # Maps to Problem.images
-    files: Mapped[List[str]] = mapped_column(JSON, default=[])                    # Maps to Problem.files
-    kes_codes: Mapped[List[str]] = mapped_column(JSON, default=[])                # Maps to Problem.kes_codes
-    topics: Mapped[List[str]] = mapped_column(JSON, default=[])                   # Maps to Problem.topics
-    kos_codes: Mapped[List[str]] = mapped_column(JSON, default=[])                # Maps to Problem.kos_codes
+    images: Mapped[List[str]] = mapped_column(JSON, default=list)                  # Maps to Problem.images
+    files: Mapped[List[str]] = mapped_column(JSON, default=list)                   # Maps to Problem.files
+    kes_codes: Mapped[List[str]] = mapped_column(JSON, default=list)               # Maps to Problem.kes_codes
+    topics: Mapped[List[str]] = mapped_column(JSON, default=list)                  # Maps to Problem.topics
+    kos_codes: Mapped[List[str]] = mapped_column(JSON, default=list)               # Maps to Problem.kos_codes
     form_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)          # Maps to Problem.form_id
 
     # FIPI specific
@@ -79,7 +79,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
     using an AsyncSession.
     """
 
-    def __init__(self, session_factory: sessionmaker):
+    def __init__(self, session_factory: 'async_sessionmaker[AsyncSession]'): # Use string annotation for forward reference
         """
         Initialize the repository with a session factory.
 
@@ -89,39 +89,69 @@ class SQLAlchemyProblemRepository(IProblemRepository):
         """
         self._session_factory = session_factory
 
-    async def save(self, problem: Problem) -> None:
+    async def save(self, problem: Problem, force_update: bool = False) -> None: # Add force_update parameter
         """
         Save a Problem entity to the database.
 
         Args:
             problem: The Problem entity to save.
+            force_update: If True, forces updating the problem even if it already exists (e.g., for re-scraping).
+                          If False, applies default upsert logic (insert if new, update if exists).
         """
         async with self._session_factory() as session:
-            # Convert Problem entity to DBProblem ORM model
-            db_problem = DBProblem(
-                problem_id=problem.problem_id,
-                subject_name=problem.subject_name,
-                text=problem.text,
-                source_url=problem.source_url,
-                difficulty_level=problem.difficulty_level,
-                task_number=problem.task_number,
-                exam_part=problem.exam_part,
-                answer=problem.answer,
-                images=problem.images,
-                files=problem.files,
-                kes_codes=problem.kes_codes,
-                topics=problem.topics,
-                kos_codes=problem.kos_codes,
-                form_id=problem.form_id,
-                fipi_proj_id=problem.fipi_proj_id,
-                created_at=problem.created_at,
-                updated_at=problem.updated_at
-            )
-            session.add(db_problem)
+            # Check if problem already exists
+            result = await session.execute(select(DBProblem).where(DBProblem.problem_id == problem.problem_id))
+            existing_db_problem = result.scalar_one_or_none()
+
+            if existing_db_problem and not force_update:
+                # Problem exists and force_update is False, maybe update specific fields or just return
+                # For now, let's just log and return to keep old behavior if not forced
+                logger.debug(f"Problem {problem.problem_id} already exists in DB. Skipping save (not forced).")
+                # To truly respect 'not forced', we might not want to update anything here.
+                # If you want to ALWAYS update if it exists, remove the 'and not force_update' and the inner block.
+                # The current implementation skips *any* update/save if it exists and not forced.
+                # Let's change the logic to UPDATE if exists, INSERT if not, respecting force_update as a signal to definitely update.
+            # Convert Problem entity to DBProblem ORM model attributes
+            db_problem_attrs = {
+                "problem_id": problem.problem_id,
+                "subject_name": problem.subject_name,
+                "text": problem.text,
+                "source_url": problem.source_url,
+                "difficulty_level": problem.difficulty_level,
+                "task_number": problem.task_number,
+                "exam_part": problem.exam_part,
+                "answer": problem.answer,
+                "images": problem.images,
+                "files": problem.files,
+                "kes_codes": problem.kes_codes,
+                "topics": problem.topics,
+                "kos_codes": problem.kos_codes,
+                "form_id": problem.form_id,
+                "fipi_proj_id": problem.fipi_proj_id,
+                "updated_at": datetime.now() # Always update the timestamp
+            }
+
+            if existing_db_problem:
+                if force_update:
+                     # Update existing record with new attributes
+                    for key, value in db_problem_attrs.items():
+                        setattr(existing_db_problem, key, value)
+                    logger.debug(f"Updated existing problem in database: {problem.problem_id} (forced update).")
+                else:
+                    # Default upsert: update existing record with new attributes
+                    for key, value in db_problem_attrs.items():
+                        setattr(existing_db_problem, key, value)
+                    logger.debug(f"Updated existing problem in database: {problem.problem_id}.")
+            else:
+                # Create new record
+                # Add created_at for new records
+                db_problem_attrs["created_at"] = problem.created_at # Use the one from domain entity
+                new_db_problem = DBProblem(**db_problem_attrs)
+                session.add(new_db_problem)
+                logger.debug(f"Inserted new problem to database: {problem.problem_id}.")
+
             await session.commit()
-            # Optional: Refresh the object to get the generated ID if needed
-            # await session.refresh(db_problem)
-            logger.debug(f"Saved problem to database: {problem.problem_id}")
+            logger.debug(f"Saved problem to database: {problem.problem_id} (force_update={force_update})")
 
     async def get_by_id(self, problem_id: str) -> Optional[Problem]:
         """
@@ -133,7 +163,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
         Returns:
             The Problem entity if found, otherwise None.
         """
-        async with self._session_factory() as session:
+        async with self._session_factory() as session: # Use the passed session_factory
             result = await session.execute(select(DBProblem).where(DBProblem.problem_id == problem_id))
             db_problem = result.scalar_one_or_none()
             if db_problem:
@@ -151,7 +181,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
         Returns:
             A list of Problem entities for the given subject name.
         """
-        async with self._session_factory() as session:
+        async with self._session_factory() as session: # Use the passed session_factory
             result = await session.execute(select(DBProblem).where(DBProblem.subject_name == subject_name))
             db_problems = result.scalars().all()
             # Convert list of DBProblem ORM models back to list of Problem entities
@@ -186,4 +216,3 @@ class SQLAlchemyProblemRepository(IProblemRepository):
             created_at=db_problem.created_at,
             updated_at=db_problem.updated_at
         )
-

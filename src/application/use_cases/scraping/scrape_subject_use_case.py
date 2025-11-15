@@ -6,8 +6,7 @@ handling all the business logic while delegating infrastructure concerns
 to appropriate adapters.
 """
 import logging
-import shutil
-from pathlib import Path
+# Удаляем import shutil и pathlib, так как больше не удаляем директории
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
@@ -15,8 +14,7 @@ from src.domain.interfaces.repositories.i_problem_repository import IProblemRepo
 from src.application.value_objects.scraping.subject_info import SubjectInfo
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
 from src.application.value_objects.scraping.scraping_result import ScrapingResult
-# from src.application.services.page_scraping_service import PageScrapingService # Пока не создаём
-# from src.application.factories.problem_factory import ProblemFactory # Пока не создаём
+from src.application.services.page_scraping_service import PageScrapingService # Импортируем обновлённый сервис
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +35,7 @@ class ScrapeSubjectUseCase:
         self,
         browser_service: IBrowserService,
         problem_repository: IProblemRepository,
-        # page_scraping_service: PageScrapingService, # Зависимость, которую добавим позже
-        # problem_factory: ProblemFactory, # Зависимость, которую добавим позже
+        page_scraping_service: PageScrapingService, # Добавляем зависимость
     ):
         """
         Initialize use case with required dependencies.
@@ -46,13 +43,11 @@ class ScrapeSubjectUseCase:
         Args:
             browser_service: Service for browser management
             problem_repository: Service for problem persistence
-            # page_scraping_service: Service for page scraping logic
-            # problem_factory: Factory for creating domain problems
+            page_scraping_service: Service for page scraping logic and problem creation
         """
         self.browser_service = browser_service
         self.problem_repository = problem_repository
-        # self.page_scraping_service = page_scraping_service
-        # self.problem_factory = problem_factory
+        self.page_scraping_service = page_scraping_service # Сохраняем
 
     async def execute(
         self,
@@ -72,7 +67,7 @@ class ScrapeSubjectUseCase:
         Business Rules:
         - Checks existing data before scraping
         - Initializes database if needed
-        - Handles force restart option
+        - Handles force restart option (affects scraping/re-saving logic, not DB deletion)
         - Provides detailed progress reporting
         - Ensures proper resource cleanup
         """
@@ -84,30 +79,43 @@ class ScrapeSubjectUseCase:
         total_problems_saved = 0
 
         try:
-            # Setup directories (example logic - now based on alias/year if needed, but centralized)
-            # For now, let's assume raw HTML goes to a central location based on subject alias
-            output_dir = Path(f"data/{subject_info.alias}/{subject_info.exam_year}")
-            raw_html_dir = output_dir / "raw_html"
-            if config.force_restart and output_dir.exists():
-                logger.info(f"Force restart enabled. Deleting existing data for {subject_info.official_name}")
-                shutil.rmtree(output_dir, ignore_errors=True)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            raw_html_dir.mkdir(parents=True, exist_ok=True)
+            # --- LOGIC: Handle raw HTML directory (if needed for caching, separate concern) ---
+            # We no longer manage a subject-specific data directory like 'data/{alias}/{year}' here.
+            # Raw HTML saving/caching logic (if any) should be handled by PageScrapingService or BrowserService if necessary.
+            # The primary persistence (Problems) is handled by IProblemRepository.
 
             # Initialize database (example logic - delegate to repository or separate service)
             # await self.problem_repository.initialize_database() # Если репозиторий сам может
 
-            # Scrape initial page (example stub)
-            init_result = await self._scrape_page_stub(
-                subject_info=subject_info,
-                config=config,
-                page_number="init"
-            )
-            page_results.append(init_result)
-            total_problems_found += init_result.get("problems_found", 0)
-            total_problems_saved += init_result.get("problems_saved", 0)
+            # Determine the base URL for the subject's project
+            # This might come from SubjectInfo or be constructed based on a template and proj_id
+            base_url = f"https://ege.fipi.ru/bank/{subject_info.proj_id}" # Example base URL construction
 
-            # Determine the last page number from the pager (stub implementation)
+            # Scrape initial page (using real PageScrapingService)
+            init_url = f"{base_url}?page=init" # Construct URL for init page
+            try:
+                init_problems = await self.page_scraping_service.scrape_page(
+                    url=init_url,
+                    subject_info=subject_info,
+                    base_url=base_url,
+                    timeout=config.timeout_seconds
+                )
+                # Save the problems found on the init page
+                init_result = await self._create_page_result_and_save_problems(
+                    page_number="init",
+                    problems=init_problems,
+                    subject_info=subject_info,
+                    config=config # Передаём config
+                )
+                page_results.append(init_result)
+                total_problems_found += len(init_problems)
+                total_problems_saved += init_result.get("problems_saved", 0)
+
+            except Exception as e:
+                logger.error(f"Error scraping init page for {subject_info.official_name}: {e}", exc_info=True)
+                errors.append(f"Init page scraping failed: {e}")
+
+            # Determine the last page number from the pager (stub implementation - needs real logic)
             last_page_num = await self._determine_last_page(subject_info.proj_id)
             logger.info(f"Determined last page number for {subject_info.official_name}: {last_page_num}")
 
@@ -131,25 +139,46 @@ class ScrapeSubjectUseCase:
                     logger.info(f"Reached configured max pages ({config.max_pages}). Stopping scraping.")
                     break
 
-                page_result = await self._scrape_page_stub(
-                    subject_info=subject_info,
-                    config=config,
-                    page_number=str(page_num)
-                )
-                page_results.append(page_result)
-                total_problems_found += page_result.get("problems_found", 0)
-                total_problems_saved += page_result.get("problems_saved", 0)
+                # Construct URL for current page
+                page_url = f"{base_url}?page={page_num}"
+                try:
+                    page_problems = await self.page_scraping_service.scrape_page(
+                        url=page_url,
+                        subject_info=subject_info,
+                        base_url=base_url,
+                        timeout=config.timeout_seconds
+                    )
+                    page_result = await self._create_page_result_and_save_problems(
+                        page_number=str(page_num),
+                        problems=page_problems,
+                        subject_info=subject_info,
+                        config=config # Передаём config
+                    )
+                    page_results.append(page_result)
 
-                # Update empty page counter (example logic)
-                if page_result.get("problems_found", 0) == 0:
-                    empty_count += 1
-                else:
-                    empty_count = 0
+                    total_problems_found += len(page_problems)
+                    total_problems_saved += page_result.get("problems_saved", 0)
 
-                # Check for consecutive empty pages (fallback)
-                if empty_count >= config.max_empty_pages:
-                    logger.info(f"Reached {config.max_empty_pages} consecutive empty pages. Stopping scraping.")
-                    break
+                    # Update empty page counter (example logic)
+                    if len(page_problems) == 0:
+                        empty_count += 1
+                    else:
+                        empty_count = 0
+
+                    # Check for consecutive empty pages (fallback)
+                    if empty_count >= config.max_empty_pages:
+                        logger.info(f"Reached {config.max_empty_pages} consecutive empty pages. Stopping scraping.")
+                        break
+
+                except Exception as e:
+                    logger.error(f"Error scraping page {page_num} for {subject_info.official_name}: {e}", exc_info=True)
+                    errors.append(f"Page {page_num} scraping failed: {e}")
+                    # Depending on business rules, decide whether to continue or stop
+                    # For now, we continue to the next page
+                    empty_count += 1 # Treat failed page like an empty one for fallback logic?
+                    if empty_count >= config.max_empty_pages:
+                         logger.info(f"Reached {config.max_empty_pages} consecutive problematic pages. Stopping scraping.")
+                         break
 
                 page_num += 1
 
@@ -196,35 +225,48 @@ class ScrapeSubjectUseCase:
                 }
             )
 
-    async def _scrape_page_stub(
+    async def _create_page_result_and_save_problems(
         self,
+        page_number: str,
+        problems: List['Problem'], # Предполагаем, что PageScrapingService возвращает List[Problem]
         subject_info: SubjectInfo,
-        config: ScrapingConfig,
-        page_number: str
+        config: ScrapingConfig # Принимаем config
     ) -> Dict[str, Any]:
         """
-        Stub for scraping a single page. This will be replaced by actual page scraping logic.
+        Create a page result dictionary and save the found problems to the repository.
 
         Args:
-            subject_info: Subject information
-            config: Scraping configuration
-            page_number: Page number to scrape
+            page_number: The number/identifier of the page scraped.
+            problems: List of Problem entities found on the page.
+            subject_info: SubjectInfo for metadata.
+            config: ScrapingConfig for options like force_restart.
 
         Returns:
-            Dict containing stub result data.
+            Dictionary representing the page result, including counts of found and saved problems.
         """
-        logger.debug(f"Stub scraping page '{page_number}' for subject {subject_info.official_name}")
-        # Simulate scraping result
-        problems_found = 1 if page_number == "init" else 0  # Example: init page has 1 problem, others might have 0
-        problems_saved = problems_found  # Example: all found are saved
+        problems_found = len(problems)
+        problems_saved = 0
+        save_errors = []
+
+        for problem in problems:
+            try:
+                # Save the problem entity using the repository
+                # Pass the config.force_restart flag if the repository needs to know about it for update logic
+                await self.problem_repository.save(problem, force_update=config.force_restart) # Теперь config доступна
+                problems_saved += 1
+            except Exception as e:
+                logger.error(f"Failed to save problem {problem.problem_id} from page {page_number}: {e}")
+                save_errors.append(str(e))
+
         return {
             "page_number": page_number,
-            "success": True,
+            "success": len(save_errors) == 0, # Success based on save errors for this page
             "problems_found": problems_found,
             "problems_saved": problems_saved,
-            "raw_html_path": f"raw_html/page_{page_number}.html", # Example path
+            "save_errors": save_errors,
             "metadata": {"subject_key": subject_info.alias, "proj_id": subject_info.proj_id} # Using alias
         }
+
 
     async def _determine_last_page(self, proj_id: str) -> Optional[int]:
         """
@@ -236,7 +278,7 @@ class ScrapeSubjectUseCase:
         Returns:
             The last page number if found, otherwise None.
         """
-        # TODO: Implement actual logic to navigate and parse the pager
+        # TODO: Implement actual logic to navigate and parse the pager using browser_service
         # This would require browser interaction to check the pager
         # Example (replace with real logic):
         # browser = await self.browser_service.get_browser()
@@ -246,8 +288,7 @@ class ScrapeSubjectUseCase:
         # if pager_element:
         #     # Parse the pager to find the last page number
         #     last_page_num = ...
-        #     return last_page_num
-        # await page.close()
+        #     await page.close()
         # await self.browser_service.release_browser(browser)
         logger.info("Last page determination not implemented in this version. Returning None to trigger fallback.")
         return None # Placeholder - replace with actual implementation
