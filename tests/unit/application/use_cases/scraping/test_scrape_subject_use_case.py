@@ -1,19 +1,22 @@
 """
 Unit tests for the ScrapeSubjectUseCase.
 
-These tests mock dependencies (IBrowserService, IProblemRepository, PageScrapingService) to isolate
+These tests mock dependencies (IBrowserService, IAssetDownloader, IProblemRepository, PageScrapingService) to isolate
 the use case logic.
 """
 import pytest
 import pytest_asyncio
-from unittest.mock import AsyncMock, patch
+import asyncio
+from unittest.mock import AsyncMock, patch, MagicMock
 from datetime import datetime
+from pathlib import Path # Импортируем Path для теста с force_restart
+
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
 from src.application.value_objects.scraping.subject_info import SubjectInfo
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
 from src.application.value_objects.scraping.scraping_result import ScrapingResult
 from src.application.services.page_scraping_service import PageScrapingService # Импортируем для типа мока
-from src.domain.models.problem import Problem # Импортируем для создания моков
+from src.domain.models.problem import Problem # Импортируем для создания моков или реальных объектов
 
 
 class TestScrapeSubjectUseCase:
@@ -22,6 +25,11 @@ class TestScrapeSubjectUseCase:
     @pytest.fixture
     def mock_browser_service(self):
         """Fixture to create a mock IBrowserService."""
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_asset_downloader(self):
+        """Fixture to create a mock IAssetDownloader."""
         return AsyncMock()
 
     @pytest.fixture
@@ -36,10 +44,11 @@ class TestScrapeSubjectUseCase:
         return AsyncMock(spec=PageScrapingService)
 
     @pytest.fixture
-    def use_case(self, mock_browser_service, mock_problem_repository, mock_page_scraping_service):
+    def use_case(self, mock_browser_service, mock_asset_downloader, mock_problem_repository, mock_page_scraping_service):
         """Fixture to create a ScrapeSubjectUseCase instance with mocked dependencies."""
         return ScrapeSubjectUseCase(
             browser_service=mock_browser_service,
+            asset_downloader=mock_asset_downloader, # Передаём мок IAssetDownloader
             problem_repository=mock_problem_repository,
             page_scraping_service=mock_page_scraping_service
             # problem_factory is now inside PageScrapingService, so we don't pass it directly here
@@ -158,6 +167,7 @@ class TestScrapeSubjectUseCase:
         # Verify that the result is successful (assuming no other errors)
         assert result.success is True
         # Verify that the problem was saved
+        # Crucially, check that save was called with force_update=True
         mock_problem_repository.save.assert_called_once_with(mock_problem, force_update=True) # Проверяем, что вызвано с force_update=True
 
 if __name__ == "__main__":
