@@ -36,7 +36,7 @@ class FileLinkProcessor(IHTMLProcessor):
         header_container: Tag,
         qblock: Tag,
         block_index: int,
-        subject_info: 'SubjectInfo', # Используем строковую аннотацию
+        subject: str, # Use subject name string
         base_url: str,
         **kwargs
     ) -> Dict[str, Any]:
@@ -47,7 +47,7 @@ class FileLinkProcessor(IHTMLProcessor):
             header_container: The BeautifulSoup Tag containing the header panel.
             qblock: The BeautifulSoup Tag containing the question block.
             block_index: The index of this block in the overall page processing.
-            subject_info: The SubjectInfo object containing subject details.
+            subject: The subject name (e.g., "math", "informatics"). This is a string.
             base_url: The base URL of the scraped page (e.g., https://ege.fipi.ru/bank/{proj_id}).
             **kwargs: Additional keyword arguments (e.g., 'run_folder_page', 'downloader').
 
@@ -62,14 +62,15 @@ class FileLinkProcessor(IHTMLProcessor):
                 "downloaded_files": { "original_url1": "local_path1", ... }
             }
         """
-        logger.debug(f"Processing file links for block {block_index} in subject {subject_info.alias}.")
+        logger.debug(f"Processing file links for block {block_index} in subject {subject}.")
 
         # Extract context parameters from kwargs
         run_folder_page = kwargs.get('run_folder_page')
         # ИСПОЛЬЗУЕМ 'downloader', который должен быть экземпляром AssetDownloaderAdapterForProcessors
         downloader_instance = kwargs.get('downloader') # Это будет AssetDownloaderAdapterForProcessors instance
         files_location_prefix = kwargs.get('files_location_prefix', '')
-        subject_name = kwargs.get('subject', subject_info.subject_name) # Используем переданный subject_name или из VO
+        # subject_name = kwargs.get('subject', subject_info.subject_name) # Используем переданный subject_name или из VO
+        # subject уже передан как строка
 
         if downloader_instance is None:
             raise ValueError("AssetDownloader adapter instance must be provided in context via 'downloader' kwarg")
@@ -129,8 +130,7 @@ class FileLinkProcessor(IHTMLProcessor):
             'header_container': header_container, # Header might not change in this processor
             'qblock': processed_qblock, # Return the *newly created* soup object with changes
             'block_index': block_index,
-            'subject': subject_name,
+            'subject': subject, # Use the string subject
             'base_url': base_url,
             'downloaded_files': downloaded_files # Include metadata
         }
-

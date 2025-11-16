@@ -26,7 +26,7 @@ class IHTMLProcessor(abc.ABC):
         header_container: Tag,
         qblock: Tag,
         block_index: int,
-        subject: str,
+        subject: str, # Use subject name string
         base_url: str,
         **kwargs
     ) -> Dict[str, Any]:
@@ -37,7 +37,7 @@ class IHTMLProcessor(abc.ABC):
             header_container: The BeautifulSoup Tag containing the header panel.
             qblock: The BeautifulSoup Tag containing the question block.
             block_index: The index of this block in the overall page processing.
-            subject: The subject name (e.g., "math", "informatics").
+            subject: The subject name (e.g., "math", "informatics"). This is a string.
             base_url: The base URL of the scraped page (e.g., https://ege.fipi.ru/bank/{proj_id}).
             **kwargs: Additional keyword arguments (e.g., for passing asset downloader, run folders).
 
@@ -60,4 +60,3 @@ class IHTMLProcessor(abc.ABC):
             - 'metadata': Dict[str, Any] (for extra info)
         """
         pass
-

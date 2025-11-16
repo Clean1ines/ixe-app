@@ -1,6 +1,5 @@
 """
 Application service for processing individual HTML blocks (header_container, qblock pairs).
-
 This service coordinates the processing of a single HTML block, applying a chain of
 concrete HTML processors from the infrastructure layer, adapting the new IAssetDownloader,
 and finally creating a Problem entity using IProblemFactory.
@@ -91,7 +90,7 @@ class HTMLBlockProcessingService:
         header_container: Tag,
         qblock: Tag,
         block_index: int,
-        context: Dict[str, Any], # Contains run_folder_page, downloader (adapter), base_url, etc.
+        context: Dict[str, Any], # Contains run_folder_page, downloader (adapter), base_url, subject_info, etc.
     ) -> Optional[Problem]: # Возвращает одну Problem или None
         """
         Process a single HTML block pair and return a Problem entity.
@@ -100,37 +99,36 @@ class HTMLBlockProcessingService:
             header_container: The BeautifulSoup Tag containing the header panel.
             qblock: The BeautifulSoup Tag containing the question block.
             block_index: The index of this block in the overall page processing.
-            context: Dictionary containing processing context like run_folder_page, asset_downloader_adapter_instance, base_url, etc.
+            context: Dictionary containing processing context like run_folder_page, asset_downloader_adapter_instance, base_url, subject_info, etc.
 
         Returns:
             A Problem entity created from the processed block, or None if processing fails critically.
         """
         logger.debug(f"Processing block {block_index} for subject {context['subject_info'].official_name} using HTMLBlockProcessingService.")
 
-        # Prepare common kwargs for all processors for this *single block*, including the ADAPTER INSTANCE passed in context
-        # The critical part: pass the ADAPTER instance where old processors expect 'downloader'
-        processor_kwargs = context.copy() # Copy the context to pass to processors
-        # Ensure the 'downloader' key in kwargs points to the adapter instance
-        # This assumes context['downloader'] is the AssetDownloaderAdapter instance
-        # processor_kwargs.update(context) # This would overwrite, but context is the base
-
         # Start with the original pair
         current_header = header_container
         current_qblock = qblock
+
+        # Prepare the base context for processors, excluding the fixed arguments
+        # Fixed arguments: header_container, qblock, block_index, subject, base_url
+        # These will be passed explicitly to each processor
+        # The rest of the context will be passed via **kwargs
+        processor_base_context = {k: v for k, v in context.items() if k not in ['header_container', 'qblock', 'block_index', 'subject', 'base_url']}
 
         # Apply processors sequentially to the *qblock* content
         for processor in self.processors:
             logger.debug(f"Applying processor {processor.__class__.__name__} to block {block_index} for subject {context['subject_info'].alias}.")
             try:
                 # Call the processor and get the potentially updated blocks and metadata
-                # CRITICAL: Pass the context (including 'downloader' adapter instance) via kwargs
+                # Pass fixed arguments explicitly, then pass the rest of the context via **kwargs
                 processed_data = await processor.process_html_block(
                     header_container=current_header,
                     qblock=current_qblock,
                     block_index=block_index,
-                    subject=context['subject_info'].subject_name, # Pass subject name string from VO in context
-                    base_url=context['base_url'],
-                    **processor_kwargs # Pass the common context including the 'downloader' adapter instance
+                    subject=context['subject_info'].official_name, # Pass subject name string from VO in context
+                    base_url=context['base_url'], # Pass base_url from context
+                    **processor_base_context # Pass the common context including the 'downloader' adapter instance and other context
                 )
                 # Update the containers with the ones returned by the processor
                 # This assumes the processor returns the modified blocks in the dict.
@@ -159,6 +157,7 @@ class HTMLBlockProcessingService:
         raw_problem_data = self._extract_raw_data_from_processed_blocks(
             header_container=current_header,
             qblock=current_qblock,
+            block_index=block_index, # Pass block_index to _extract_raw_data_from_processed_blocks
             subject_info=context['subject_info'],
             source_url=context.get('source_url', 'N/A'), # URL страницы, где был блок
             run_folder_page=context.get('run_folder_page', Path('.')) # Передаём run_folder_page для потенциального использования
@@ -175,13 +174,14 @@ class HTMLBlockProcessingService:
             # If factory creation fails, we also return None
             return None
 
-    def _extract_raw_data_from_processed_blocks(self, header_container: Tag, qblock: Tag, subject_info: SubjectInfo, source_url: str, run_folder_page: Path) -> Dict[str, Any]:
+    def _extract_raw_data_from_processed_blocks(self, header_container: Tag, qblock: Tag, block_index: int, subject_info: SubjectInfo, source_url: str, run_folder_page: Path) -> Dict[str, Any]:
         """
         Extract raw data from the processed HTML blocks.
 
         Args:
             header_container: The processed header container BeautifulSoup Tag.
             qblock: The processed question block BeautifulSoup Tag.
+            block_index: The index of this block in the overall page processing.
             subject_info: The SubjectInfo object.
             source_url: The URL of the page where the blocks were found.
             run_folder_page: Path to the run folder for this page's assets (for potential use in extraction logic).
@@ -251,7 +251,7 @@ class HTMLBlockProcessingService:
         # This dictionary maps the processed HTML data to the fields expected by Problem or IProblemFactory
         raw_data = {
             'problem_id': f"{subject_info.alias}_{block_index}_{hash(text_content) % 1000000}", # Generate a unique ID based on content hash and block index
-            'subject_name': subject_info.subject_name, # Use the full name from SubjectInfo VO
+            'subject_name': subject_info.official_name, # Use the full name from SubjectInfo VO - ИСПРАВЛЕНО
             'text': text_content,
             'source_url': source_url, # The URL of the page this block came from
             'answer': answer,
@@ -269,4 +269,3 @@ class HTMLBlockProcessingService:
         }
 
         return raw_data
-

@@ -30,7 +30,7 @@ class UnwantedElementRemover(IHTMLProcessor):
         header_container: Tag,
         qblock: Tag,
         block_index: int,
-        subject_info: 'SubjectInfo', # Используем строковую аннотацию
+        subject: str, # Use subject name string
         base_url: str,
         **kwargs
     ) -> Dict[str, Any]:
@@ -41,7 +41,7 @@ class UnwantedElementRemover(IHTMLProcessor):
             header_container: The BeautifulSoup Tag containing the header panel.
             qblock: The BeautifulSoup Tag containing the question block.
             block_index: The index of this block in the overall page processing.
-            subject_info: The SubjectInfo object containing subject details.
+            subject: The subject name (e.g., "math", "informatics"). This is a string.
             base_url: The base URL of the scraped page (e.g., https://ege.fipi.ru/bank/{proj_id}).
             **kwargs: Additional keyword arguments.
 
@@ -55,7 +55,7 @@ class UnwantedElementRemover(IHTMLProcessor):
                 "base_url": str,
             }
         """
-        logger.debug(f"Removing unwanted elements for block {block_index} in subject {subject_info.alias}.")
+        logger.debug(f"Removing unwanted elements for block {block_index} in subject {subject}.")
 
         # Process the qblock content to remove unwanted elements
         qblock_content = str(qblock)
@@ -94,7 +94,6 @@ class UnwantedElementRemover(IHTMLProcessor):
             'header_container': header_container, # Header might not change in this processor
             'qblock': processed_qblock, # Return the *newly created* soup object with changes
             'block_index': block_index,
-            'subject': subject_info.subject_name, # Use subject name from VO
+            'subject': subject, # Use the string subject
             'base_url': base_url
         }
-
