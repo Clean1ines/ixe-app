@@ -2,7 +2,7 @@
 Value Object representing the result of a scraping operation.
 """
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 
 @dataclass # Убираем frozen=True

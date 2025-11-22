@@ -6,7 +6,7 @@ signature expected by the legacy HTML processors from ~/iXe.
 """
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any, Dict, List, Tuple
 from urllib.parse import urlparse
 import os
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader # Импортируем интерфейс

@@ -2,7 +2,7 @@
 Value Object representing configuration parameters for the scraping process.
 """
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any, Dict, List, Tuple
 from enum import Enum
 
 class ScrapingMode(Enum):

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any, Dict, Tuple
+from typing import Optional, List, Tuple, Dict, Any
 
 @dataclass
 class Problem:

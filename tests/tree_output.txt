@@ -1,0 +1,247 @@
+/
+├── application/
+│   ├── services/
+│   │   └── scraping/
+│   │       ├── __pycache__/
+│   │       ├── fakes/
+│   │       │   ├── __pycache__/
+│   │       │   ├── __init__.py (0 B)
+│   │       │   └── fake_problem_repository.py (2.1 KB)
+│   │       │       module __main__: Fake implementation of IProblemRepository for testing.  This is a working implementation that use...
+│   │       │       class FakeProblemRepository: Fake repository implementation for testing that stores problems in memory.  Unlike mocks that ver...
+│   │       │       method FakeProblemRepository.save: Save a problem to the in-memory store.
+│   │       │       method FakeProblemRepository.get_by_id: Get a problem by ID from the in-memory store.
+│   │       │       method FakeProblemRepository.get_by_subject: Get all problems for a subject from the in-memory store.
+│   │       │       method FakeProblemRepository.clear: Clear all problems from the store (useful for test setup).
+│   │       │       method FakeProblemRepository.all_problems: Get all problems currently stored (for verification in tests).
+│   │       │       function save: Save a problem to the in-memory store.
+│   │       │       function get_by_id: Get a problem by ID from the in-memory store.
+│   │       │       function get_by_subject: Get all problems for a subject from the in-memory store.
+│   │       │       function clear: Clear all problems from the store (useful for test setup).
+│   │       │       function all_problems: Get all problems currently stored (for verification in tests).
+│   │       ├── test_progress_logic.py (5.9 KB)
+│   │       │   module __main__: Tests for scraping progress logic - functional core that determines next page to scrape.  These t...
+│   │       │   function create_test_problem: Helper to create test problems with consistent data
+│   │       │   function test_extract_page_number_from_url: Test extraction of page numbers from FIPI URLs
+│   │       │   function test_determine_next_page_returns_1_when_no_problems_exist: When no problems exist in database, scraping should start from page 1
+│   │       │   function test_determine_next_page_returns_2_when_page_1_is_complete: When page 1 is fully scraped, next page should be 2
+│   │       │   function test_determine_next_page_returns_1_when_force_restart: When force_restart is True, always start from page 1 regardless of existing problems
+│   │       │   function test_determine_next_page_handles_mixed_page_numbers: When problems exist from multiple pages, start from the next page after the highest
+│   │       │   function test_determine_next_page_uses_config_start_page: When start_page is set in config, it should be used regardless of existing problems
+│   │       └── test_scraping_progress_service.py (3.4 KB)
+│   │           module __main__: Tests for ScrapingProgressService that follow classical TDD principles. These tests focus on stat...
+│   │           function create_test_problem: Helper to create test problems with consistent data
+│   │           function test_determine_next_page_returns_1_when_no_problems_exist: When no problems exist in database, scraping should start from page 1
+│   │           function test_determine_next_page_returns_2_when_page_1_is_complete: When page 1 is fully scraped, next page should be 2
+│   │           function test_determine_next_page_returns_1_when_force_restart: When force_restart is True, always start from page 1 regardless of existing problems
+│   └── use_cases/
+│       └── scraping/
+│           ├── __pycache__/
+│           └── test_scrape_subject_use_case_app.py (9.0 KB)
+│               module __main__: Unit tests for ScrapeSubjectUseCase that follow classical TDD principles. These tests focus on st...
+│               class MockPageScrapingService: Simple mock that mimics page scraping behavior without external dependencies
+│               method MockPageScrapingService.scrape_page: Return mock problems based on URL page number
+│               class MockProgressReporter: Simple reporter that captures progress without output
+│               function test_successful_scraping_from_start: Test that scraping works correctly when starting from scratch with no existing problems.
+│               function test_scraping_continues_from_next_page: Test that scraping continues from the next page when some pages are already scraped.
+│               function test_force_restart_rescrapes_from_page_1: Test that force_restart=True causes scraping to start from page 1 regardless of existing problems.
+│               function scrape_page: Return mock problems based on URL page number
+├── architecture/
+│   ├── __pycache__/
+│   └── test_architecture.py (4.9 KB)
+│       module __main__: Architecture tests for the project. These tests verify that architectural boundaries are not viol...
+│       function _get_all_python_files_in_dir: Helper to recursively find all .py files in a directory.
+│       function _extract_imports_from_file: Extract imported module names from a Python file using AST.
+│       function test_domain_layer_no_deps_on_application_or_infrastructure: Test that files in the domain layer do not import from application or infrastructure layers.
+│       function test_application_layer_no_deps_on_infrastructure_via_src: Test that files in the application layer do not directly import core infrastructure implementatio...
+├── e2e/
+├── integration/
+│   ├── application/
+│   │   ├── __pycache__/
+│   │   ├── test_html_block_processing_service_integration.py (6.6 KB)
+│   │   │   module __main__: Integration tests for HTMLBlockProcessingService. These tests verify the interaction between the ...
+│   │   │   function mock_asset_downloader: Mock for IAssetDownloader to avoid real downloads.
+│   │   │   function mock_problem_factory: Mock for IProblemFactory.
+│   │   │   function real_problem_factory: Real ProblemFactory instance.
+│   │   │   function subject_info: Sample SubjectInfo.
+│   │   │   function sample_html_block_pair: A sample HTML block pair (header_container, qblock) for testing.
+│   │   │   function html_block_processing_service_with_real_processors: Create a real HTMLBlockProcessingService with *real* processors.
+│   │   │   function test_html_block_processing_service_integration_with_real_processors: Test HTMLBlockProcessingService with real processors and mocked asset downloader. This verifies t...
+│   │   └── test_scrape_subject_use_case_integration.py (10.2 KB)
+│   │       module __main__: Integration tests for ScrapeSubjectUseCase and PageScrapingService. These tests verify the intera...
+│   │       function mock_browser_service: Mock for IBrowserService to avoid real browser calls.
+│   │       function mock_asset_downloader: Mock for IAssetDownloader to avoid real downloads.
+│   │       function mock_problem_repository: Mock for IProblemRepository.
+│   │       function mock_problem_factory: Mock for IProblemFactory.
+│   │       function html_block_processing_service: Create a real HTMLBlockProcessingService with mocked asset downloader and problem factory.
+│   │       function page_scraping_service: Create a real PageScrapingService with mocked dependencies.
+│   │       function scrape_subject_use_case: Create a real ScrapeSubjectUseCase with mocked dependencies.
+│   │       function test_scrape_subject_use_case_integration: Test that ScrapeSubjectUseCase correctly orchestrates scraping with mocked external dependencies.
+│   │       function test_page_scraping_service_integration: Test that PageScrapingService correctly uses HTMLBlockProcessingService and ProblemFactory.
+│   └── infrastructure/
+│       ├── adapters/
+│       │   ├── __pycache__/
+│       │   └── test_browser_pool_service_adapter.py (4.8 KB)
+│       │       module __main__: Integration tests for the BrowserPoolServiceAdapter. These tests use real BrowserManager instance...
+│       │       function browser_pool_adapter: Fixture to create and initialize a BrowserPoolServiceAdapter.
+│       │       function test_browser_pool_adapter_initialize_and_close: Test that BrowserPoolServiceAdapter initializes and closes correctly.
+│       │       function test_browser_pool_adapter_get_and_release_browser: Test getting and releasing a browser from the pool.
+│       │       function test_browser_pool_adapter_get_page_content_convenience: Test the convenience method get_page_content.
+│       │       function test_browser_pool_adapter_concurrent_access_improved: Test concurrent access to browsers from the pool. This test focuses on functionality and graceful...
+│       ├── browser_management/
+│       │   ├── __pycache__/
+│       │   └── test_browser_manager.py (3.8 KB)
+│       │       module __main__: Integration tests for the updated BrowserManager. The BrowserManager now creates/closes a page fo...
+│       │       function browser_manager: Fixture to create and initialize a BrowserManager.
+│       │       function test_browser_manager_initialize_and_close: Test that BrowserManager initializes and closes correctly.
+│       │       function test_browser_manager_get_page_content: Test that BrowserManager can get page content with a new page per call.
+│       │       function test_browser_manager_get_page_content_timeout: Test that BrowserManager handles timeout correctly with a new page per call.
+│       │       function test_browser_manager_is_healthy: Test that BrowserManager's health check works.
+│       │       function test_browser_manager_concurrent_page_requests: Test that a single BrowserManager can handle concurrent page requests by creating multiple pages.
+│       └── repositories/
+│           ├── __pycache__/
+│           └── test_sqlalchemy_problem_repository.py (5.1 KB)
+│               module __main__: Integration tests for the SQLAlchemyProblemRepository.  These tests use a real SQLite database (i...
+│               function db_session: Create an in-memory SQLite database session for testing.
+│               function repository: Create a SQLAlchemyProblemRepository instance.
+│               function sample_problem: Create a sample Problem entity for testing.
+│               function test_save_and_get_by_id: Test saving a problem and retrieving it by ID.
+│               function test_get_by_id_not_found: Test retrieving a problem by ID that does not exist.
+│               function test_save_and_get_by_subject: Test saving multiple problems and retrieving them by subject.
+└── unit/
+    ├── application/
+    │   ├── interfaces/
+    │   │   └── factories/
+    │   │       └── __pycache__/
+    │   ├── services/
+    │   │   ├── __pycache__/
+    │   │   └── test_scraping_orchestrator.py (5.6 KB)
+    │   │       module __main__: Unit tests for ScrapingOrchestrator.
+    │   │       function mock_scrape_use_case: Mock for ScrapeSubjectUseCase.
+    │   │       function orchestrator: Instance of ScrapingOrchestrator with mocked dependencies.
+    │   │       class TestScrapingOrchestrator: Tests for ScrapingOrchestrator.
+    │   │       method TestScrapingOrchestrator.test_run_parallel_scraping_single_subject: Test orchestrator runs scraping for a single subject.
+    │   │       method TestScrapingOrchestrator.test_run_parallel_scraping_multiple_subjects: Test orchestrator runs scraping for multiple subjects concurrently.
+    │   │       method TestScrapingOrchestrator.test_run_parallel_scraping_handles_exception: Test orchestrator handles exceptions from a subject's scraping.
+    │   │       function test_run_parallel_scraping_single_subject: Test orchestrator runs scraping for a single subject.
+    │   │       function test_run_parallel_scraping_multiple_subjects: Test orchestrator runs scraping for multiple subjects concurrently.
+    │   │       function test_run_parallel_scraping_handles_exception: Test orchestrator handles exceptions from a subject's scraping.
+    │   ├── use_cases/
+    │   │   └── scraping/
+    │   │       ├── __pycache__/
+    │   │       └── test_scrape_subject_use_case.py (7.6 KB)
+    │   │           module __main__: Unit tests for ScrapeSubjectUseCase.
+    │   │           function mock_page_scraping_service: Mock for PageScrapingService.
+    │   │           function mock_problem_repository: Mock for IProblemRepository.
+    │   │           function mock_problem_factory: Mock for IProblemFactory.
+    │   │           function mock_browser_service: Mock for IBrowserService.
+    │   │           function mock_asset_downloader_impl: Mock for IAssetDownloader implementation.
+    │   │           function use_case: Instance of ScrapeSubjectUseCase with mocked dependencies.
+    │   │           method TestScrapeSubjectUseCase.test_successful_scraping: Test successful scraping execution.
+    │   │           method TestScrapeSubjectUseCase.test_error_in_page_scraping: Test use case handles errors from PageScrapingService.
+    │   │           method TestScrapeSubjectUseCase.test_force_restart_behavior: Test that force_restart is passed correctly to the repository via _save_problems.
+    │   │           function test_successful_scraping: Test successful scraping execution.
+    │   │           function test_error_in_page_scraping: Test use case handles errors from PageScrapingService.
+    │   │           function test_force_restart_behavior: Test that force_restart is passed correctly to the repository via _save_problems.
+    │   └── value_objects/
+    │       └── scraping/
+    │           ├── __pycache__/
+    │           ├── test_scraping_config.py (4.4 KB)
+    │           │   module __main__: Unit tests for the ScrapingConfig value object.
+    │           │   class TestScrapingConfigCreation: Tests for creating a ScrapingConfig instance.
+    │           │   method TestScrapingConfigCreation.test_creation_success_defaults: Test successful creation of a ScrapingConfig with default values.
+    │           │   method TestScrapingConfigCreation.test_creation_success_custom_values: Test successful creation of a ScrapingConfig with custom values.
+    │           │   method TestScrapingConfigCreation.test_creation_fails_negative_timeout: Test that creation fails if timeout_seconds is negative.
+    │           │   method TestScrapingConfigCreation.test_creation_fails_zero_timeout: Test that creation fails if timeout_seconds is zero.
+    │           │   method TestScrapingConfigCreation.test_creation_fails_negative_retry_attempts: Test that creation fails if retry_attempts is negative.
+    │           │   method TestScrapingConfigCreation.test_creation_fails_negative_retry_delay: Test that creation fails if retry_delay_seconds is negative.
+    │           │   method TestScrapingConfigCreation.test_creation_fails_zero_max_empty_pages: Test that creation fails if max_empty_pages is zero.
+    │           │   method TestScrapingConfigCreation.test_creation_fails_negative_max_pages: Test that creation fails if max_pages is negative.
+    │           │   method TestScrapingConfigCreation.test_equality_same_values: Test that ScrapingConfig instances with same values are equal.
+    │           │   method TestScrapingConfigCreation.test_equality_different_values: Test that ScrapingConfig instances with different values are not equal.
+    │           │   function test_creation_success_defaults: Test successful creation of a ScrapingConfig with default values.
+    │           │   function test_creation_success_custom_values: Test successful creation of a ScrapingConfig with custom values.
+    │           │   function test_creation_fails_negative_timeout: Test that creation fails if timeout_seconds is negative.
+    │           │   function test_creation_fails_zero_timeout: Test that creation fails if timeout_seconds is zero.
+    │           │   function test_creation_fails_negative_retry_attempts: Test that creation fails if retry_attempts is negative.
+    │           │   function test_creation_fails_negative_retry_delay: Test that creation fails if retry_delay_seconds is negative.
+    │           │   function test_creation_fails_zero_max_empty_pages: Test that creation fails if max_empty_pages is zero.
+    │           │   function test_creation_fails_negative_max_pages: Test that creation fails if max_pages is negative.
+    │           │   function test_equality_same_values: Test that ScrapingConfig instances with same values are equal.
+    │           │   function test_equality_different_values: Test that ScrapingConfig instances with different values are not equal.
+    │           ├── test_scraping_result.py (5.4 KB)
+    │           │   module __main__: Unit tests for the ScrapingResult value object.
+    │           │   class TestScrapingResult: Tests for ScrapingResult value object.
+    │           │   method TestScrapingResult.test_creation_success: Test successful creation of a ScrapingResult with valid data.
+    │           │   method TestScrapingResult.test_duration_seconds: Test the duration_seconds property.
+    │           │   method TestScrapingResult.test_success_rate: Test the success_rate property.
+    │           │   method TestScrapingResult.test_equality_same_values: Test that ScrapingResult instances with same values are equal.
+    │           │   method TestScrapingResult.test_equality_different_values: Test that ScrapingResult instances with different values are not equal.
+    │           │   function test_creation_success: Test successful creation of a ScrapingResult with valid data.
+    │           │   function test_duration_seconds: Test the duration_seconds property.
+    │           │   function test_success_rate: Test the success_rate property.
+    │           │   function test_equality_same_values: Test that ScrapingResult instances with same values are equal.
+    │           │   function test_equality_different_values: Test that ScrapingResult instances with different values are not equal.
+    │           └── test_subject_info.py (3.6 KB)
+    │               module __main__: Unit tests for the SubjectInfo value object.
+    │               class TestSubjectInfoCreation: Tests for creating a SubjectInfo instance.
+    │               method TestSubjectInfoCreation.test_creation_success: Test successful creation of a SubjectInfo with valid data.
+    │               method TestSubjectInfoCreation.test_creation_fails_empty_alias: Test that creation fails if alias is empty.
+    │               method TestSubjectInfoCreation.test_creation_fails_empty_official_name: Test that creation fails if official_name is empty.
+    │               method TestSubjectInfoCreation.test_creation_fails_empty_proj_id: Test that creation fails if proj_id is empty.
+    │               method TestSubjectInfoCreation.test_creation_fails_invalid_exam_year: Test that creation fails if exam_year is out of range.
+    │               method TestSubjectInfoCreation.test_equality_same_values: Test that SubjectInfo instances with same values are equal.
+    │               method TestSubjectInfoCreation.test_equality_different_values: Test that SubjectInfo instances with different values are not equal.
+    │               function test_creation_success: Test successful creation of a SubjectInfo with valid data.
+    │               function test_creation_fails_empty_alias: Test that creation fails if alias is empty.
+    │               function test_creation_fails_empty_official_name: Test that creation fails if official_name is empty.
+    │               function test_creation_fails_empty_proj_id: Test that creation fails if proj_id is empty.
+    │               function test_creation_fails_invalid_exam_year: Test that creation fails if exam_year is out of range.
+    │               function test_equality_same_values: Test that SubjectInfo instances with same values are equal.
+    │               function test_equality_different_values: Test that SubjectInfo instances with different values are not equal.
+    ├── domain/
+    │   ├── __pycache__/
+    │   └── test_problem.py (11.3 KB)
+    │       module __main__: Unit tests for the Problem domain entity.  These tests verify the behavior, validation (invariant...
+    │       class TestProblemCreation: Tests for creating a Problem instance.
+    │       method TestProblemCreation.test_creation_success: Test successful creation of a Problem with valid data.
+    │       method TestProblemCreation.test_creation_defaults: Test creation with minimal required data and default values.
+    │       class TestProblemValidation: Tests for Problem validation (invariants).
+    │       method TestProblemValidation.test_creation_fails_empty_text: Test that creation fails if text is empty.
+    │       method TestProblemValidation.test_creation_fails_invalid_exam_part: Test that creation fails if exam_part is invalid.
+    │       method TestProblemValidation.test_creation_fails_task_number_out_of_range: Test that creation fails if task_number is out of range.
+    │       method TestProblemValidation.test_creation_fails_invalid_difficulty_level: Test that creation fails if difficulty_level is invalid.
+    │       class TestProblemIdentity: Tests for Problem identity methods (__eq__, __hash__).
+    │       method TestProblemIdentity.test_equality_same_id: Test that Problems with the same problem_id are equal.
+    │       method TestProblemIdentity.test_equality_different_id: Test that Problems with different problem_id are not equal.
+    │       method TestProblemIdentity.test_equality_not_same_type: Test that Problem is not equal to a non-Problem object.
+    │       class TestProblemBehavior: Tests for Problem behavior methods.
+    │       method TestProblemBehavior.test_is_answer_correct_true: Test is_answer_correct returns True for a matching answer.
+    │       method TestProblemBehavior.test_is_answer_correct_false_no_answer: Test is_answer_correct returns False if no correct answer is set.
+    │       method TestProblemBehavior.test_can_be_attempted_true: Test can_be_attempted returns True if text is present.
+    │       method TestProblemBehavior.test_can_be_attempted_false_empty_text: Test can_be_attempted returns False if text is empty.
+    │       method TestProblemBehavior.test_has_images_true: Test has_images returns True if images list is not empty.
+    │       method TestProblemBehavior.test_has_images_false_empty_list: Test has_images returns False if images list is empty.
+    │       method TestProblemBehavior.test_is_suitable_for_level_true: Test is_suitable_for_level returns True for matching level.
+    │       method TestProblemBehavior.test_is_suitable_for_level_false_not_matching: Test is_suitable_for_level returns False for non-matching level.
+    │       method TestProblemBehavior.test_is_suitable_for_level_false_none_level: Test is_suitable_for_level returns False if problem's level is None.
+    │       function test_creation_success: Test successful creation of a Problem with valid data.
+    │       function test_creation_defaults: Test creation with minimal required data and default values.
+    │       function test_creation_fails_empty_text: Test that creation fails if text is empty.
+    │       function test_creation_fails_invalid_exam_part: Test that creation fails if exam_part is invalid.
+    │       function test_creation_fails_task_number_out_of_range: Test that creation fails if task_number is out of range.
+    │       function test_creation_fails_invalid_difficulty_level: Test that creation fails if difficulty_level is invalid.
+    │       function test_equality_same_id: Test that Problems with the same problem_id are equal.
+    │       function test_equality_different_id: Test that Problems with different problem_id are not equal.
+    │       function test_equality_not_same_type: Test that Problem is not equal to a non-Problem object.
+    │       function test_is_answer_correct_true: Test is_answer_correct returns True for a matching answer.
+    │       function test_is_answer_correct_false_no_answer: Test is_answer_correct returns False if no correct answer is set.
+    │       function test_can_be_attempted_true: Test can_be_attempted returns True if text is present.
+    │       function test_can_be_attempted_false_empty_text: Test can_be_attempted returns False if text is empty.
+    │       function test_has_images_true: Test has_images returns True if images list is not empty.
+    │       function test_has_images_false_empty_list: Test has_images returns False if images list is empty.
+    │       function test_is_suitable_for_level_true: Test is_suitable_for_level returns True for matching level.
+    │       function test_is_suitable_for_level_false_not_matching: Test is_suitable_for_level returns False for non-matching level.
+    │       function test_is_suitable_for_level_false_none_level: Test is_suitable_for_level returns False if problem's level is None.
+    ├── infrastructure/
+    └── presentation/

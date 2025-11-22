@@ -3,7 +3,7 @@ Unit tests for ScrapeSubjectUseCase.
 """
 import pytest
 import asyncio
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
 from src.application.services.page_scraping_service import PageScrapingService
@@ -13,33 +13,54 @@ from src.domain.interfaces.external_services.i_asset_downloader import IAssetDow
 from src.application.interfaces.factories.i_problem_factory import IProblemFactory
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
 from src.application.value_objects.scraping.subject_info import SubjectInfo
-from src.application.value_objects.scraping.scraping_result import ScrapingResult
 from src.domain.models.problem import Problem
 
 @pytest.fixture
 def mock_page_scraping_service():
     """Mock for PageScrapingService."""
-    return AsyncMock(spec=PageScrapingService)
+    mock = AsyncMock(spec=PageScrapingService)
+    mock.scrape_page = AsyncMock(return_value=[])
+    return mock
 
 @pytest.fixture
 def mock_problem_repository():
     """Mock for IProblemRepository."""
-    return Mock(spec=IProblemRepository)
+    mock = MagicMock(spec=IProblemRepository)
+    mock.save = AsyncMock()  # Важно: делаем save асинхронным
+    mock.get_by_subject = AsyncMock(return_value=[])
+    mock.clear_subject_problems = AsyncMock()
+    mock.get_all = AsyncMock(return_value=[])
+    return mock
 
 @pytest.fixture
 def mock_problem_factory():
     """Mock for IProblemFactory."""
-    return Mock(spec=IProblemFactory)
+    mock = MagicMock(spec=IProblemFactory)
+    mock.create_problem = MagicMock(return_value=Problem(
+        problem_id="test_problem",
+        subject_name="Математика. Базовый уровень",
+        text="Test problem",
+        source_url="https://test.url",
+        created_at=datetime.now()
+    ))
+    return mock
 
 @pytest.fixture
 def mock_browser_service():
     """Mock for IBrowserService."""
-    return Mock(spec=IBrowserService)
+    mock = MagicMock(spec=IBrowserService)
+    mock.get_page_content = AsyncMock(return_value="<html></html>")
+    mock.get_browser = AsyncMock()
+    mock.release_browser = AsyncMock()
+    return mock
 
 @pytest.fixture
 def mock_asset_downloader_impl():
     """Mock for IAssetDownloader implementation."""
-    return AsyncMock(spec=IAssetDownloader)
+    mock = AsyncMock(spec=IAssetDownloader)
+    mock.download = AsyncMock(return_value="/path/to/file")
+    mock.download_bytes = AsyncMock()
+    return mock
 
 @pytest.fixture
 def use_case(mock_page_scraping_service, mock_problem_repository, mock_problem_factory, mock_browser_service, mock_asset_downloader_impl):
@@ -55,91 +76,95 @@ def use_case(mock_page_scraping_service, mock_problem_repository, mock_problem_f
 class TestScrapeSubjectUseCase:
 
     @pytest.mark.asyncio
-    async def test_successful_scraping(self, use_case, mock_page_scraping_service, mock_problem_repository):
+    async def test_successful_scraping(self, use_case, mock_page_scraping_service, mock_problem_repository, mock_problem_factory, subject_info):
         """Test successful scraping execution."""
-        subject_info = SubjectInfo.from_alias("math")
-        # Установим max_pages=1 и start_page=1, чтобы избежать бесконечного цикла
-        config = ScrapingConfig(mode=ScrapingMode.SEQUENTIAL, timeout_seconds=30, start_page=1, max_pages=1, max_empty_pages=1)
+        config = ScrapingConfig(
+            mode=ScrapingMode.SEQUENTIAL,
+            timeout_seconds=30,
+            start_page=1,
+            max_pages=1,
+            max_empty_pages=1
+        )
         
-        mock_problem = Mock(spec=Problem)
-        mock_problem.problem_id = "math_0_12345"
-        mock_problems_list = [mock_problem]
-        # Мокнем scrape_page, чтобы он возвращал список проблем только для первой итерации
-        mock_page_scraping_service.scrape_page.return_value = mock_problems_list
+        # Создаем тестовую проблему
+        mock_problem = Problem(
+            problem_id="math_0_12345",
+            subject_name=subject_info.official_name,
+            text="Test problem text",
+            source_url=f"{subject_info.base_url}?page=1",
+            created_at=datetime.now()
+        )
         
-        # Мокнем _save_problems, чтобы он возвращал количество сохраненных проблем
-        with patch.object(use_case, '_save_problems', return_value=1) as mock_save:
-            result = await use_case.execute(subject_info, config)
+        # Мокаем возврат проблемы
+        mock_page_scraping_service.scrape_page = AsyncMock(return_value=[mock_problem])
+        
+        # Выполняем use case
+        result = await use_case.execute(subject_info, config)
 
+        # Проверяем результат
         assert result.success is True
         assert result.total_pages == 1
         assert result.total_problems_found == 1
         assert result.total_problems_saved == 1
-        # Проверим, что _save_problems был вызван с правильными аргументами
-        mock_save.assert_called_once_with(mock_problems_list, config.force_restart)
+        
+        # Проверяем, что проблема была сохранена
+        mock_problem_repository.save.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_error_in_page_scraping(self, use_case, mock_page_scraping_service):
+    async def test_error_in_page_scraping(self, use_case, mock_page_scraping_service, subject_info):
         """Test use case handles errors from PageScrapingService."""
-        subject_info = SubjectInfo.from_alias("math")
-        # Установим max_pages=1 и start_page=1, чтобы избежать бесконечного цикла
-        config = ScrapingConfig(mode=ScrapingMode.SEQUENTIAL, timeout_seconds=30, start_page=1, max_pages=1, max_empty_pages=1)
+        config = ScrapingConfig(
+            mode=ScrapingMode.SEQUENTIAL,
+            timeout_seconds=30,
+            start_page=1,
+            max_pages=1,
+            max_empty_pages=1
+        )
         
-        # Мокнем scrape_page, чтобы он выбрасывал исключение
+        # Мокаем ошибку в scraping service
         mock_page_scraping_service.scrape_page.side_effect = Exception("Browser error")
 
         result = await use_case.execute(subject_info, config)
 
-        # Проверим, что возвращается ошибка
+        # Проверяем, что возвращается ошибка
         assert result.success is False
         assert result.total_problems_saved == 0
         assert len(result.errors) == 1
         assert "Browser error" in result.errors[0]
 
     @pytest.mark.asyncio
-    async def test_force_restart_behavior(self, use_case, mock_problem_repository):
-        """Test that force_restart is passed correctly to the repository via _save_problems."""
-        subject_info = SubjectInfo.from_alias("math")
-        # Установим max_pages=1 и start_page=1, чтобы избежать бесконечного цикла
-        config = ScrapingConfig(mode=ScrapingMode.SEQUENTIAL, timeout_seconds=30, start_page=1, max_pages=1, force_restart=True, max_empty_pages=1)
-        
-        mock_problem = Mock(spec=Problem)
-        mock_problem.problem_id = "math_0_12345"
-        mock_problems_list = [mock_problem]
-        
-        # Создадим мок для PageScrapingService, который возвращает одну проблему
-        actual_page_service = Mock(spec=PageScrapingService)
-        actual_page_service.scrape_page = AsyncMock(return_value=[mock_problem])
-
-        # Создадим экземпляр UseCase с моками
-        final_use_case = ScrapeSubjectUseCase(
-            page_scraping_service=actual_page_service,
-            problem_repository=mock_problem_repository,
-            problem_factory=Mock(spec=IProblemFactory),
-            browser_service=Mock(spec=IBrowserService),
-            asset_downloader_impl=Mock(spec=IAssetDownloader)
+    async def test_force_restart_behavior(self, use_case, mock_problem_repository, mock_page_scraping_service, subject_info):
+        """Test that force_restart is passed correctly to the repository."""
+        config = ScrapingConfig(
+            mode=ScrapingMode.SEQUENTIAL,
+            timeout_seconds=30,
+            start_page=1,
+            max_pages=1,
+            max_empty_pages=1,
+            force_restart=True
         )
         
-        # Мокнем _save_problems, чтобы избежать реального вызова save
-        # Но теперь _save_problems будет вызывать mock_problem_repository.save
-        # Проверим, что save вызывается с force_restart=True
-        # Для этого нужно замокать _save_problems, чтобы он вызвал реальный save на замоканном репозитории
-        # Или проверить, что save был вызван после выполнения
-        # Лучше всего будет проверить, что save был вызван с force_restart=True
-        # Проверим, что save вызывается в _save_problems
-        # Замокаем _save_problems, но внутри него вызовем реальный save
-        def real_save_side_effect(problems, force_restart):
-            for p in problems:
-                mock_problem_repository.save(p, force_restart=force_restart)
-            return len(problems)
-
-        with patch.object(final_use_case, '_save_problems', side_effect=real_save_side_effect):
-            await final_use_case.execute(subject_info, config)
+        # Создаем тестовую проблему
+        mock_problem = Problem(
+            problem_id="math_0_12345",
+            subject_name=subject_info.official_name,
+            text="Test problem text",
+            source_url=f"{subject_info.base_url}?page=1",
+            created_at=datetime.now()
+        )
         
-        # Проверим, что mock_problem_repository.save был вызван с force_restart=True
-        assert mock_problem_repository.save.call_count == 1
-        # Проверим аргументы вызова save
-        call_args = mock_problem_repository.save.call_args
-        assert call_args is not None
-        # args[0] - проблема, kwargs['force_restart'] - force_restart
-        assert call_args[1]['force_restart'] == config.force_restart
+        # Мокаем возврат проблемы
+        mock_page_scraping_service.scrape_page = AsyncMock(return_value=[mock_problem])
+        
+        # Выполняем use case
+        result = await use_case.execute(subject_info, config)
+        
+        # Проверяем результат
+        assert result.success is True
+        assert result.total_problems_saved == 1
+        
+        # Проверяем, что clear_subject_problems был вызван при force_restart=True
+        mock_problem_repository.clear_subject_problems.assert_awaited_once()
+        
+        # Проверяем, что save был вызван
+        mock_problem_repository.save.assert_awaited_once()

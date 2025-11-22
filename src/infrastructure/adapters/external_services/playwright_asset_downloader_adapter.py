@@ -8,7 +8,7 @@ It fulfills the contract defined by IAssetDownloader.
 import logging
 import asyncio
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any, Dict, List, Tuple
 import re
 from playwright.async_api import async_playwright, APIRequestContext, Error as PlaywrightError
 
@@ -33,7 +33,9 @@ class PlaywrightAssetDownloaderAdapter:
         self.timeout_ms = timeout * 1000
         self._request_context: APIRequestContext | None = None
         self._playwright_ctx = None
+        self._browser = None # Store the browser instance
         self._initialized = False
+        self.timeout = timeout # FIX: Add the timeout attribute
 
     async def initialize(self):
         """Initialize the Playwright context and API request context."""
@@ -44,8 +46,10 @@ class PlaywrightAssetDownloaderAdapter:
         self._playwright_ctx = await async_playwright().start()
         # Launch a browser instance just to get the request context
         # We don't need a full browser/page for downloads, just the API context
-        browser = await self._playwright_ctx.chromium.launch(headless=True)
-        self._request_context = await browser.new_context().request
+        self._browser = await self._playwright_ctx.chromium.launch(headless=True)
+        # FIX: Await the coroutine and then get the request context
+        context = await self._browser.new_context()
+        self._request_context = context.request
         self._initialized = True
         logger.info("PlaywrightAssetDownloaderAdapter initialized successfully.")
 
@@ -59,7 +63,8 @@ class PlaywrightAssetDownloaderAdapter:
                 logger.error(f"Error disposing API request context: {e}")
             self._request_context = None
 
-        if self._browser: # Assuming we stored the browser instance if launched solely for req context
+        # FIX: Access self._browser which is now correctly stored as an attribute
+        if self._browser:
              try:
                  await self._browser.close()
              except Exception as e:
@@ -105,7 +110,8 @@ class PlaywrightAssetDownloaderAdapter:
                 return False
         except PlaywrightError as e:
             if "certificate" in str(e).lower():
-                logger.warning(f"SSL certificate error for {asset_url}, trying alternative method (aiohttp).")
+                # Suppress SSL certificate error logs by using debug level instead of warning
+                logger.debug(f"SSL certificate error for {asset_url}, trying alternative method (aiohttp).")
                 return await self._download_with_aiohttp(asset_url, destination_path)
             else:
                 logger.error(f"Playwright error downloading asset {asset_url}: {e}", exc_info=True)
@@ -142,7 +148,8 @@ class PlaywrightAssetDownloaderAdapter:
                 return None
         except PlaywrightError as e:
             if "certificate" in str(e).lower():
-                logger.warning(f"SSL certificate error for bytes download {asset_url}, trying alternative method (aiohttp).")
+                # Suppress SSL certificate error logs by using debug level instead of warning
+                logger.debug(f"SSL certificate error for bytes download {asset_url}, trying alternative method (aiohttp).")
                 return await self._download_bytes_with_aiohttp(asset_url)
             else:
                 logger.error(f"Playwright error downloading bytes from {asset_url}: {e}", exc_info=True)
@@ -158,13 +165,13 @@ class PlaywrightAssetDownloaderAdapter:
             import aiohttp
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:
+                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response: # Используем self.timeout
                     if response.status == 200:
                         destination_path.parent.mkdir(parents=True, exist_ok=True)
                         content = await response.read()
                         with open(destination_path, 'wb') as f:
                             f.write(content)
-                        logger.info(f"Successfully downloaded asset using aiohttp: {asset_url}")
+                        logger.debug(f"Successfully downloaded asset using aiohttp: {asset_url}")
                         return True
                     else:
                         logger.warning(f"aiohttp failed to download asset from {asset_url}. Status: {response.status}")
@@ -182,10 +189,10 @@ class PlaywrightAssetDownloaderAdapter:
             import aiohttp
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:
+                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response: # Используем self.timeout
                     if response.status == 200:
                         content = await response.read()
-                        logger.info(f"Successfully downloaded bytes using aiohttp: {asset_url}")
+                        logger.debug(f"Successfully downloaded bytes using aiohttp: {asset_url}")
                         return content
                     else:
                         logger.warning(f"aiohttp failed to download bytes from {asset_url}. Status: {response.status}")
@@ -196,4 +203,3 @@ class PlaywrightAssetDownloaderAdapter:
         except Exception as e:
             logger.error(f"Error in alternative bytes download method (aiohttp) for {asset_url}: {e}")
             return None
-

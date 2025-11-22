@@ -10,7 +10,7 @@ operation (scraping a page and returning domain entities) rather than a core dom
 """
 import abc
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Any, Dict, Tuple
 from src.domain.models.problem import Problem
 from src.application.value_objects.scraping.subject_info import SubjectInfo
 

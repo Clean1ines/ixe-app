@@ -1,15 +1,6 @@
-from .image_processor import ImageScriptProcessor
 from .file_link_processor import FileLinkProcessor
-from .task_info_processor import TaskInfoProcessor
+from .image_script_processor import ImageScriptProcessor
 from .input_field_remover import InputFieldRemover
 from .mathml_remover import MathMLRemover
+from .task_info_processor import TaskInfoProcessor
 from .unwanted_element_remover import UnwantedElementRemover
-
-__all__ = [
-    "ImageScriptProcessor",
-    "FileLinkProcessor", 
-    "TaskInfoProcessor",
-    "InputFieldRemover",
-    "MathMLRemover",
-    "UnwantedElementRemover"
-]

@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete  # Add delete import
 from src.domain.models.problem import Problem
 from src.domain.interfaces.repositories.i_problem_repository import IProblemRepository
 
@@ -108,9 +108,9 @@ class SQLAlchemyProblemRepository(IProblemRepository):
                 # For now, let's just log and return to keep old behavior if not forced
                 logger.debug(f"Problem {problem.problem_id} already exists in DB. Skipping save (not forced).")
                 # To truly respect 'not forced', we might not want to update anything here.
-                # If you want to ALWAYS update if it exists, remove the 'and not force_update' and the inner block.
                 # The current implementation skips *any* update/save if it exists and not forced.
-                # Let's change the logic to UPDATE if exists, INSERT if not, respecting force_update as a signal to definitely update.
+                return
+            
             # Convert Problem entity to DBProblem ORM model attributes
             db_problem_attrs = {
                 "problem_id": problem.problem_id,
@@ -133,7 +133,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
 
             if existing_db_problem:
                 if force_update:
-                     # Update existing record with new attributes
+                    # Update existing record with new attributes
                     for key, value in db_problem_attrs.items():
                         setattr(existing_db_problem, key, value)
                     logger.debug(f"Updated existing problem in database: {problem.problem_id} (forced update).")
@@ -152,6 +152,20 @@ class SQLAlchemyProblemRepository(IProblemRepository):
 
             await session.commit()
             logger.debug(f"Saved problem to database: {problem.problem_id} (force_update={force_update})")
+            
+    async def clear_subject_problems(self, subject_name: str) -> None:
+        """
+        Clear all problems for a specific subject.
+        This is used when force_restart=True to completely refresh the subject data.
+        
+        Args:
+            subject_name: The name of the subject to clear
+        """
+        async with self._session_factory() as session:
+            logger.info(f"Clearing all problems for subject: {subject_name}")
+            await session.execute(delete(DBProblem).where(DBProblem.subject_name == subject_name))
+            await session.commit()
+            logger.info(f"Cleared all problems for subject: {subject_name}")
 
     async def get_by_id(self, problem_id: str) -> Optional[Problem]:
         """

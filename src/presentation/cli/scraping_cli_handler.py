@@ -7,13 +7,15 @@ via the main function, adhering to DIP.
 import asyncio
 import logging
 import argparse
+import urllib.parse # ИМПОРТИРУЕМ urllib.parse В НАЧАЛЕ ФАЙЛА
 from pathlib import Path
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
-from src.application.value_objects.scraping.scraping_config import ScrapingConfig
+from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
 from src.application.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
 from src.dependency_injection.composition_root import create_scraping_components
+from src.application.services.scraping.progress_reporter import ScrapingProgressReporter
 
 logger = logging.getLogger(__name__)
 
@@ -44,32 +46,42 @@ class ScrapingCLIHandler:
         logger.info(f"CLI Handler: Starting scraping for subject '{subject_alias}' in mode '{mode}'.")
 
         try:
-            # --- 1. PREPARE INPUT DATA ---
             # Get subject info based on alias
             try:
                 subject_info = SubjectInfo.from_alias(subject_alias)
             except ValueError as e:
                 logger.error(f"Unknown subject alias: {subject_alias}")
+                print(f"Error: Unknown subject alias: {subject_alias}")
                 return
+
+            # Map string mode to ScrapingMode enum
+            mode_enum = ScrapingMode.SEQUENTIAL
+            if mode == "range":
+                mode_enum = ScrapingMode.SEQUENTIAL
+            elif mode == "full":
+                mode_enum = ScrapingMode.SEQUENTIAL
 
             # Prepare scraping config
             config = ScrapingConfig(
-                mode=mode,
-                base_run_folder=base_run_folder,
-                timeout=30,
+                mode=mode_enum,
+                timeout_seconds=30,
                 force_restart=force_restart,
                 start_page=start_page,
-                end_page=end_page,
+                max_pages=end_page,
             )
 
-            # --- 2. EXECUTE USE CASE ---
+            # Execute use case - it will handle all progress reporting internally
             result = await self.scrape_use_case.execute(subject_info, config)
 
-            # --- 3. REPORT RESULTS ---
-            logger.info(f"CLI Handler: Scraping completed for '{subject_alias}'. Result: {result}")
+            # Final result reporting is handled by the progress reporter in the use case
+            if not result.success:
+                print(f"Scraping completed with errors. Check logs for details.")
+            else:
+                print(f"Scraping completed successfully!")
 
         except Exception as e:
             logger.error(f"CLI Handler: Error during scraping for '{subject_alias}': {e}", exc_info=True)
+            print(f"Error during scraping: {e}")
             raise # Re-raise to be handled by main for cleanup
 
 
@@ -88,7 +100,14 @@ def main():
 
     args = parser.parse_args()
 
-    # --- COMPOSITION ROOT LOGIC MOVED HERE ---
+    print(f"Subject: {args.subject}")
+    print(f"Mode: {args.mode}")
+    print(f"Start page: {args.start_page}")
+    print(f"End page: {args.end_page}")
+    print(f"Force restart: {args.force_restart}")
+    print(f"Run folder: {args.run_folder}")
+    
+    # Create components
     scrape_use_case, browser_service, asset_downloader_impl = create_scraping_components(base_run_folder=args.run_folder)
 
     handler = ScrapingCLIHandler(scrape_use_case=scrape_use_case)
@@ -105,14 +124,16 @@ def main():
                 force_restart=args.force_restart,
                 base_run_folder=args.run_folder
             )
+        except Exception as e:
+            logger.error(f"Critical error during scraping: {e}", exc_info=True)
+            print(f"Critical error: {e}")
+            raise        
         finally:
-            # --- 4. CLEANUP RESOURCES ---
-            # Close browser service
+            # Cleanup resources
             try:
                 await browser_service.close()
             except Exception as e:
                 logger.error(f"Error closing browser service: {e}")
-            # Close asset downloader
             try:
                 await asset_downloader_impl.close()
             except Exception as e:
