@@ -30,13 +30,13 @@ async def test_browser_manager_initialize_and_close():
 
 @pytest.mark.asyncio
 async def test_browser_manager_get_page_content(browser_manager):
-    # Используем надежный URL
-    url = "https://example.com"
+    # Используем надежный URL ФИПИ вместо example.com
+    url = "https://fipi.ru"
     content = await browser_manager.get_page_content(url, timeout=15)
 
     assert content is not None
     assert isinstance(content, str)
-    assert "Example Domain" in content or "<html>" in content.lower()
+    assert "Федеральный институт педагогических измерений" in content
 
 @pytest.mark.asyncio
 async def test_browser_manager_get_page_content_timeout(browser_manager):

@@ -11,22 +11,32 @@
 
 Не предлагайте "быстрые фиксы", которые ломают архитектуру или являются хаками. Фокусируйтесь на долгосрочном и качественном решении. Отвечайте кратко, по делу, без воды. Используйте технически точный язык. Если пользователь попросит команды терминала, предоставьте их.
 
-**Проблема:**
-`ImageScriptProcessor` (доменный/инфраструктурный процессор) должен использовать `playwright.Page` для загрузки изображений, чтобы обойти 404 ошибки. Но `HTMLBlockProcessingService` (прикладной сервис) вызывает `ImageScriptProcessor` и получает `context`, который *может* содержать `playwright_page`, но `PageScrapingService` (прикладой сервис, зависящий от `IBrowserService`) не обязан предоставлять `Page` через `context`, потому что `IBrowserService` не предоставляет `Page`.
+Промпт 3: Critical Complexity Hotspots Refactoring
 
-**Решение, сохраняющее DIP:**
+```bash
+# Команды для анализа самых сложных методов:
+python -m radon cc src/ -s | grep " C " | sort -k5 -nr | head -10
+cat src/domain/models/problem.py | wc -l
+cat src/application/use_cases/scraping/scrape_subject_use_case.py | wc -l  
+cat src/application/services/page_scraping_service.py | wc -l
+python -c "
+for file in ['src/domain/models/problem.py', 'src/application/use_cases/scraping/scrape_subject_use_case.py']:
+    with open(file) as f:
+        content = f.read()
+        imports = len([line for line in content.split('\n') if line.startswith('import') or line.startswith('from')])
+        print(f'{file}: {imports} imports, {len(content.splitlines())} lines')
+"
+```
 
-1.  **`IBrowserService` не должен предоставлять `Page` напрямую.** Это нарушит DIP, так как доменный слой (`ImageScriptProcessor`) будет зависеть от инфраструктурной детали (`playwright.Page`).
-2.  **`ImageScriptProcessor` не должен напрямую зависеть от `playwright.Page`.** Вместо этого он должен зависеть от *абстракции* для загрузки ресурсов.
-3.  **Создать новый интерфейс (порт), например, `IResourceDownloader` (в доменном слое или на границе домена).** Этот интерфейс будет определять метод для загрузки бинарных данных по URL.
-4.  **Создать реализацию `IResourceDownloader` (в инфраструктурном слое), например, `PlaywrightResourceDownloaderAdapter`.** Эта реализация будет принимать `playwright.Page` (или объект, который может предоставить `Page`, например, `BrowserManager`) и использовать `page.request.get` для загрузки.
-5.  **`PageScrapingService` будет отвечать за создание/получение `PlaywrightResourceDownloaderAdapter`, передав ему `Page` (полученную через `BrowserManager`), и инъекцию этого адаптера в `ImageScriptProcessor` или передачу его через `context` как объект, реализующий `IResourceDownloader`.
+Задача: Рефактори 3 самых критичных метода по сложности с TDD подходом:
 
-**Таким образом:**
+1. Problem.__post_init__ (C-16) - выдели валидаторы
+2. ScrapeSubjectUseCase.execute (C-13) - выдели PageProcessor, ErrorHandler
+3. PageScrapingService.scrape_page (C-20) - выдели IframeHandler, BlockParser
 
-- `IBrowserService` остается неизменным, соблюдая DIP для основного сценария получения HTML.
-- `PageScrapingService` нарушает DIP *только* в части получения `Page` для *этой специфической* задачи (скачивания ресурсов), но *не* для основного сценария.
-- `ImageScriptProcessor` зависит от *абстракции* `IResourceDownloader`, а не от `playwright.Page`. Это позволяет легко тестировать `ImageScriptProcessor` с моками `IResourceDownloader`.
-- `PlaywrightResourceDownloaderAdapter` инкапсулирует работу с `playwright.Page`.
+Требования:
 
-Это требует больше изменений, но сохраняет архитектуру. `ImageScriptProcessor` будет получать `IResourceDownloader` через `context` или через конструктор (в момент создания, через фабрику или DI).
+· Для каждого метода создай тесты ПЕРЕД рефакторингом
+· Сохрани 100% обратную совместимость
+· Используй feature flags для постепенного внедрения
+· Разбей каждый метод на 3-4 более простых

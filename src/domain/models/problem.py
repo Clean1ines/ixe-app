@@ -2,6 +2,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List, Any, Dict, Tuple
 from typing import Optional, List, Tuple, Dict, Any
+from .validators import (
+    CompositeProblemValidator,
+    TextValidator,
+    DifficultyValidator,
+    TaskNumberValidator,
+    ExamPartValidator,
+)
 
 @dataclass
 class Problem:
@@ -47,6 +54,7 @@ class Problem:
 
     def __post_init__(self):
         """Validate the problem after initialization."""
+        # Initialize default values for mutable defaults
         if self.images is None:
             self.images = []
         if self.files is None:
@@ -62,15 +70,14 @@ class Problem:
         if self.updated_at is None:
             self.updated_at = datetime.now()
 
-        # Invariants
-        if not self.text.strip():
-            raise ValueError("Problem text cannot be empty")
-        if self.exam_part and self.exam_part not in ["Part 1", "Part 2"]:
-            raise ValueError(f"Invalid exam part: {self.exam_part}")
-        if self.task_number is not None and (self.task_number < 1 or self.task_number > 19):
-            raise ValueError(f"Task number {self.task_number} is out of range (1-19)")
-        if self.difficulty_level and self.difficulty_level not in ["basic", "advanced"]:
-            raise ValueError(f"Invalid difficulty level: {self.difficulty_level}")
+        # Create and use composite validator for invariants
+        validator = CompositeProblemValidator([
+            TextValidator(),
+            ExamPartValidator(),
+            TaskNumberValidator(),
+            DifficultyValidator(),
+        ])
+        validator.validate(self)
 
     # Identity methods required for Entities
     def __eq__(self, other):
