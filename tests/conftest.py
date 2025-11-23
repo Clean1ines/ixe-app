@@ -1,9 +1,30 @@
 import pytest
 import asyncio
+import sys
+import os
 from pathlib import Path
 from datetime import datetime
-from src.application.value_objects.scraping.subject_info import SubjectInfo
-from src.domain.models.problem import Problem
+
+# Добавляем src в путь для импортов
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+try:
+    from src.application.value_objects.scraping.subject_info import SubjectInfo
+    from src.domain.models.problem import Problem
+except ImportError as e:
+    print(f"Import error in conftest: {e}")
+    # Fallback для случаев когда src не установлен как пакет
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("subject_info", "src/application/value_objects/scraping/subject_info.py")
+    subject_info_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(subject_info_module)
+    SubjectInfo = subject_info_module.SubjectInfo
+    
+    spec = importlib.util.spec_from_file_location("problem", "src/domain/models/problem.py")  
+    problem_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(problem_module)
+    Problem = problem_module.Problem
+
 from unittest.mock import AsyncMock, MagicMock
 
 # Настройка логирования для тестов

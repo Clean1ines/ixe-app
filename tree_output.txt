@@ -1,6 +1,46 @@
 /
 ├── .github/
 │   └── workflows/
+├── data/
+│   ├── math/
+│   │   └── page_1/
+│   │       └── assets/
+│   └── promath/
+│       ├── page_1/
+│       │   └── assets/
+│       │       ├── xs3qstsrc0EAF5F4054BCAB954FA570B08B75D1D0_1_1576247873.gif/
+│       │       ├── xs3qstsrc38145AE420079F9D4C19246517C7086D_1_1642161503.png/
+│       │       ├── xs3qstsrc69FC87BA2A03B8724426E1086DEBB45A_1_1676461317.png/
+│       │       ├── xs3qstsrc96A1CCD4FC1A9FED47689887747631F0_1_1638185246.png/
+│       │       ├── xs3qstsrcB3F8CC4C3D5CA7194B8FC7EA12D13DAB_1_1478531278.png/
+│       │       ├── xs3qstsrcDA5103E67E0BB354406C6ACF8BFC2E84_1_1478531281.png/
+│       │       └── xs3qstsrcE6EFE322D98AA0874F8B5E9642525DB5_1_1478534085.png/
+│       ├── page_2/
+│       │   └── assets/
+│       │       ├── xs3qstsrc164ebee2c79c41a989df535a795492eb_7_1759831280.png/
+│       │       ├── xs3qstsrc1845EC69297E96CD4D230DBE53F23AD0_1_1478531283.png/
+│       │       ├── xs3qstsrc19c88fef112749fb91a1496bfdf0d082_6_1758622307.png/
+│       │       ├── xs3qstsrc1B7468B8EEB4857941CAFF1419F5C529_1_1478534640.png/
+│       │       ├── xs3qstsrc31C6B63D6C22848746013402B1A72A54_1_1512575080.png/
+│       │       ├── xs3qstsrc5E6122FA349888304C37DFEB97C6E8BF_1_1642161518.png/
+│       │       └── xs3qstsrcD2295821B2339E5C48183A316A76652E_1_1710237026.png/
+│       ├── page_3/
+│       │   └── assets/
+│       │       ├── xs3qstsrc164ebee2c79c41a989df535a795492eb_7_1759831280.png/
+│       │       ├── xs3qstsrc31C6B63D6C22848746013402B1A72A54_1_1512575080.png/
+│       │       ├── xs3qstsrc5BE76882372DA34A4D57257A6E6CEC35_1_1512579787.png/
+│       │       └── xs3qstsrcC44796BC4D4DA31A4EB2E8D80CC04FD8_1_1676461172.png/
+│       ├── page_4/
+│       │   └── assets/
+│       │       ├── xs3qstsrc1845EC69297E96CD4D230DBE53F23AD0_1_1478531283.png/
+│       │       ├── xs3qstsrc19c88fef112749fb91a1496bfdf0d082_6_1758622307.png/
+│       │       ├── xs3qstsrc1B7468B8EEB4857941CAFF1419F5C529_1_1478534640.png/
+│       │       ├── xs3qstsrc5E6122FA349888304C37DFEB97C6E8BF_1_1642161518.png/
+│       │       └── xs3qstsrcD2295821B2339E5C48183A316A76652E_1_1710237026.png/
+│       └── page_5/
+│           └── assets/
+│               └── xs3qstsrcC44796BC4D4DA31A4EB2E8D80CC04FD8_1_1676461172.png/
+├── scripts/
 ├── src/
 │   ├── application/
 │   │   ├── factories/
@@ -33,11 +73,7 @@
 │   │   │   │   │   function identify_core_elements: Identify header and qblock elements from a group of HTML elements.  Args:     block_elements: Lis...
 │   │   │   │   │   function _find_qblock: Pure function to identify qblock element.
 │   │   │   │   │   function _find_header_container: Pure function to identify header container.
-│   │   │   │   ├── fipa_page_block_parser.py (3.3 KB)
-│   │   │   │   │   module __main__: Application service implementing IHTMLBlockParser for FIPI pages.  This service encapsulates the ...
-│   │   │   │   │   class FIPIPageBlockParser: Application service implementing IHTMLBlockParser for FIPI pages. Groups HTML elements by task id...
-│   │   │   │   │   method FIPIPageBlockParser.parse_blocks: Parses the page content and returns a list of element groups, where each group contains all HTML ...
-│   │   │   │   │   function parse_blocks: Parses the page content and returns a list of element groups, where each group contains all HTML ...
+│   │   │   │   ├── fipa_page_block_parser.py (2.1 KB)
 │   │   │   │   └── i_html_block_parser.py (949.0 B)
 │   │   │   │       module __main__: Application interface for parsing HTML blocks on a FIPI page.  This interface defines the contrac...
 │   │   │   │       class IHTMLBlockParser: Interface for parsing HTML blocks.
@@ -95,10 +131,7 @@
 │   │   │       function _scrape_single_subject: Helper method to scrape a single subject and return its result. This is wrapped in a task by run_...
 │   │   ├── use_cases/
 │   │   │   ├── scraping/
-│   │   │   │   └── scrape_subject_use_case.py (9.2 KB)
-│   │   │   │       module __main__: Use case for scraping a single subject.  Refactor: make progress_service and progress_reporter op...
-│   │   │   │       method ScrapeSubjectUseCase.__init__: progress_service and progress_reporter are optional — passing them explicitly is still preferred,...
-│   │   │   │       function __init__: progress_service and progress_reporter are optional — passing them explicitly is still preferred,...
+│   │   │   │   └── scrape_subject_use_case.py (9.0 KB)
 │   │   │   └── __init__.py (0 B)
 │   │   ├── value_objects/
 │   │   │   └── scraping/
@@ -114,26 +147,10 @@
 │   │   │       │   method ScrapingResult.success_rate: Get success rate as percentage.
 │   │   │       │   function duration_seconds: Get duration of scraping in seconds.
 │   │   │       │   function success_rate: Get success rate as percentage.
-│   │   │       └── subject_info.py (6.6 KB)
-│   │   │           module __main__: Value Object representing information required to scrape a specific subject.  This includes ident...
-│   │   │           function _get_proj_id_by_alias: Helper to get proj_id by alias.
-│   │   │           function _get_alias_by_official_name: Helper to get alias by official name.
-│   │   │           class SubjectInfo: Value Object for subject-specific scraping parameters.
-│   │   │           method SubjectInfo.__post_init__: Validate the subject information after initialization.
-│   │   │           method SubjectInfo.from_alias: Create a SubjectInfo instance from its short alias using the mapping. Args:     alias: Short alia...
-│   │   │           method SubjectInfo.from_official_name: Create a SubjectInfo instance from its official Russian name using the mapping. Args:     officia...
-│   │   │           method SubjectInfo.base_url: Construct the base URL for this subject's problem bank on FIPI. Example: f"https://ege.fipi.ru/ba...
-│   │   │           method SubjectInfo.subject_name: Getter for the official_name, conforming to the old interface expectation.
-│   │   │           function __post_init__: Validate the subject information after initialization.
-│   │   │           function from_alias: Create a SubjectInfo instance from its short alias using the mapping. Args:     alias: Short alia...
-│   │   │           function from_official_name: Create a SubjectInfo instance from its official Russian name using the mapping. Args:     officia...
-│   │   │           function base_url: Construct the base URL for this subject's problem bank on FIPI. Example: f"https://ege.fipi.ru/ba...
-│   │   │           function subject_name: Getter for the official_name, conforming to the old interface expectation.
+│   │   │       └── subject_info.py (4.2 KB)
 │   │   └── __init__.py (0 B)
 │   ├── dependency_injection/
-│   │   └── composition_root.py (6.5 KB)
-│   │       module __main__: Composition Root module for assembling application dependencies.  This module provides functions ...
-│   │       function create_scraping_components: Creates and wires together all components needed for scraping.  Args:     base_run_folder: Base p...
+│   │   └── composition_root.py (4.5 KB)
 │   ├── domain/
 │   │   ├── html_processing/
 │   │   │   └── pure_html_transforms.py (5.0 KB)
@@ -325,8 +342,7 @@
 │   │   │       ├── __init__.py (313.0 B)
 │   │   │       ├── file_link_processor.py (2.4 KB)
 │   │   │       │   class FileLinkProcessor: Downloads file links (pdf/doc/zip) and collects local paths. Expects 'downloader', 'run_folder_pa...
-│   │   │       ├── image_script_processor.py (2.5 KB)
-│   │   │       │   class ImageScriptProcessor: Downloads images referenced in body_html and rewrites img.src to local asset path. Expects contex...
+│   │   │       ├── image_script_processor.py (3.6 KB)
 │   │   │       ├── input_field_remover.py (758.0 B)
 │   │   │       ├── mathml_remover.py (576.0 B)
 │   │   │       ├── task_info_processor.py (1.6 KB)
@@ -607,4 +623,8 @@
 │       function sample_problem: Фикстура с тестовой задачей
 │       function test_run_folder: Фикстура с временной папкой для тестов
 │       function mock_dependencies: Фикстура с моками зависимостей для тестов
-└── __init__.py (0 B)
+├── __init__.py (0 B)
+├── analyze_architecture.py (1.8 KB)
+│   function analyze_imports: Анализирует импорты в файле
+│   function check_layer_violations: Проверяет нарушения слоевой архитектуры
+└── test_image_urls.py (1.5 KB)

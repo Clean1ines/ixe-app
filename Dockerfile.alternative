@@ -1,0 +1,27 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc g++ make wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем зависимости поэтапно
+COPY requirements-minimal.txt .
+RUN pip install --no-cache-dir -r requirements-minimal.txt
+
+# Затем устанавливаем остальные зависимости
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --no-cache-dir radon bandit safety pytest-cov
+RUN pip install --no-cache-dir playwright==1.36.0
+RUN playwright install --with-deps
+
+COPY src/ ./src/
+COPY tests/ ./tests/ 
+COPY scripts/ ./scripts/
+
+ENV PYTHONPATH=/app
+
+CMD ["python", "-c", "import sys; sys.path.append('/app'); import src; print('✅ Imports successful')"]

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app-py39:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: 3.9
+    container_name: scraping-py39
+    environment:
+      - PYTHONPATH=/app
+    
+  app-py312:
+    build:
+      context: .
+      dockerfile: Dockerfile  
+      args:
+        PYTHON_VERSION: 3.12
+    container_name: scraping-py312
+    environment:
+      - PYTHONPATH=/app
+      
+  test:
+    build:
+      context: .
+      target: test
+    container_name: scraping-test
+    environment:
+      - PYTHONPATH=/app
+    command: python -m pytest tests/ -v

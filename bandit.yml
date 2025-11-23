@@ -1,0 +1,25 @@
+# Bandit configuration file
+# https://bandit.readthedocs.io/
+
+# Tests to exclude
+exclude_dirs: ['tests', 'scripts', 'venv']
+
+# Skipped tests
+skips: ['B101', 'B102', 'B301', 'B303', 'B304', 'B305', 'B306', 'B308', 'B309']
+
+# Target specific files
+targets:
+  - src/
+
+# Output format
+output_format: json
+
+# Confidence levels to include
+confidence: 
+  - high
+  - medium
+
+# Severity levels to include  
+severity:
+  - high
+  - medium

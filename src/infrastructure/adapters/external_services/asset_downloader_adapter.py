@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Optional, Any, Dict, List, Tuple
 from urllib.parse import urlparse
 import os
-from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader # Импортируем интерфейс
+import hashlib
+from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,8 @@ class AssetDownloaderAdapter:
         filename = os.path.basename(parsed_url.path)
         if not filename:
             # If no filename in path, generate one based on URL hash and type
-            import hashlib
-            hash_suffix = hashlib.md5(asset_url.encode()).hexdigest()[:8]
+            # Use SHA256 instead of MD5 for security
+            hash_suffix = hashlib.sha256(asset_url.encode()).hexdigest()[:16]
             extension_map = {'image': '.jpg', 'file': '.dat', 'pdf': '.pdf', 'zip': '.zip'} # Basic mapping
             ext = extension_map.get(asset_type, '.dat')
             filename = f"{asset_type}_{hash_suffix}{ext}"
@@ -74,9 +75,3 @@ class AssetDownloaderAdapter:
             # Log the error if a logger is available
             logger.error(f"Error downloading asset {asset_url} using adapter: {e}")
             return None
-
-    # If old processors expect other methods like 'download_bytes', add them here
-    # async def download_bytes(self, asset_url: str) -> Optional[bytes]:
-    #     # Similar adaptation for bytes download using self._impl
-    #     pass
-

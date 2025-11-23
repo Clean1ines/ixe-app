@@ -1,0 +1,6 @@
+# Safety configuration
+ignore:
+  - 51457  # Ignore specific CVE if needed
+  
+output: json
+cache: true
