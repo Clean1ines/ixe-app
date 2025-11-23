@@ -20,10 +20,13 @@ def extract_dom_tree(html: str) -> BeautifulSoup:
 def extract_block_pairs(dom_or_html: Union[str, BeautifulSoup]) -> List[Tuple[str, str]]:
     """
     Из DOM (или HTML-строки) извлекает упорядоченный список пар (header_html, body_html).
-    Подход: ищем элементы, которые в текущем коде используются как header/qblock.
-    Это удобно тестировать: вход — строка, выход — список кортежей строк.
-    Возвращаем HTML-представление элементов (str), чтобы дальнейшие pure-функции
-    могли оперировать текстом, не завися от BS-объектов.
+    
+    НОВАЯ ЛОГИКА:
+    - Ищем элементы с классом 'qblock'
+    - Если qblock не имеет ID (или ID начинается не с 'q'), считаем его общим контекстом
+    - Если qblock имеет ID, начинающийся с 'q', считаем его индивидуальным заданием
+    - Для индивидуальных заданий: header - это div с id="i<ID>" (где ID из qblock), body - сам qblock
+    - Общие контексты прикрепляются к следующему индивидуальному заданию (если применимо)
     """
     if isinstance(dom_or_html, str):
         dom = extract_dom_tree(dom_or_html)
@@ -31,36 +34,40 @@ def extract_block_pairs(dom_or_html: Union[str, BeautifulSoup]) -> List[Tuple[st
         dom = dom_or_html
 
     pairs: List[Tuple[str, str]] = []
-
-    # Простая и надёжная эвристика: пара — это элемент с классом "problem-header"
-    # и ближайший следующий sibling с классом "problem-body" (или похожие варианты).
-    # Это место, которое ты потом можешь подстроить под реальные селекторы FIPI.
-    headers = dom.find_all(class_="problem-header")
-    if not headers:
-        # fallback: используем контейнеры с data-task-id или заголовки h3 + div
-        headers = dom.find_all(lambda el: el.name in ("h3", "h2") and "task" in (el.get("class") or []))
-
-    for header in headers:
-        # ищем ближайший элемент после header, который выглядит как тело блока
-        # допустим, это следующий sibbling div
-        body = None
-        sib = header.find_next_sibling()
-        while sib and (not (isinstance(sib, Tag))):
-            sib = sib.find_next_sibling() if hasattr(sib, "find_next_sibling") else None
-        # Проверяем несколько вариантов, остановимся на первом диве
-        while sib and isinstance(sib, Tag) and body is None:
-            if sib.name == "div" or "problem-body" in (sib.get("class") or []):
-                body = sib
-                break
-            sib = sib.find_next_sibling()
-        # Если не нашли, попробуем поиск внутри общего контейнера
-        if body is None:
-            possible = header.parent.find_all(class_="problem-body") if header.parent else []
-            body = possible[0] if possible else None
-
-        header_html = str(header)
-        body_html = str(body) if body is not None else ""
+    qblocks = dom.find_all(class_='qblock')
+    
+    common_context = None
+    
+    for qblock in qblocks:
+        qblock_id = qblock.get('id', '')
+        
+        # Проверяем, является ли это общим qblock-ом (без ID или ID не начинается с 'q')
+        if not qblock_id or not qblock_id.startswith('q'):
+            # Сохраняем общий контекст
+            common_context = str(qblock)
+            continue
+        
+        # Это индивидуальное задание (ID начинается с 'q')
+        # Создаем header с id="i<ID>"
+        task_id = qblock_id[1:]  # Убираем 'q' префикс
+        header_html = f'<div id="i{task_id}" class="header-container">Задание {task_id}</div>'
+        
+        # Создаем body, объединяя общий контекст (если есть) с индивидуальным qblock
+        individual_qblock_html = str(qblock)
+        
+        if common_context:
+            # Вставляем общий контекст в начало индивидуального qblock
+            # Это грубое объединение, в реальности может потребоваться более точное вмешательство в DOM
+            body_html = f"{common_context}{individual_qblock_html}"
+        else:
+            body_html = individual_qblock_html
+            
         pairs.append((header_html, body_html))
+        
+        # Сбрасываем общий контекст после использования (он может применяться только к следующему заданию)
+        # В реальности логика может быть сложнее: общий контекст может применяться к нескольким заданиям
+        # или до следующего общего контекста. Для упрощения сбрасываем после первого использования.
+        common_context = None
 
     return pairs
 
