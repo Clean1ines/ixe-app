@@ -39,6 +39,10 @@ except ImportError:
         scraping = type('Scraping', (), {'asset_download_timeout': 60})()
     config = FallbackConfig()
 
+async def create_tables(engine):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
 def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseCase, IBrowserService, IAssetDownloader]:
     # Use centralized configuration for timeouts with graceful degradation
     if CENTRAL_CONFIG_AVAILABLE:
@@ -79,10 +83,16 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
         
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
     
-    async def create_tables():
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-    asyncio.run(create_tables())
+    # Create tables in a separate thread to avoid the nested event loop issue
+    import threading
+    def run_create_tables():
+        asyncio.run(create_tables(engine))
+    
+    # Run the async function in a separate thread
+    thread = threading.Thread(target=run_create_tables)
+    thread.start()
+    thread.join()
+    
     problem_repository: IProblemRepository = SQLAlchemyProblemRepository(session_factory)
 
     problem_factory: IProblemFactory = ProblemFactory()
