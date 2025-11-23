@@ -34,7 +34,7 @@ def subject_info():
 def sample_html_block_elements():
     """A sample HTML block elements list that ElementIdentifier can recognize."""
     from bs4 import BeautifulSoup
-    
+
     # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ElementIdentifier ищет класс 'qblock' и элементы с ID начинающимся на 'i'
     html_content = """
     <div id="i123" class="header-container">
@@ -49,17 +49,18 @@ def sample_html_block_elements():
         <a href="assets/file1.pdf">Скачать файл</a>
     </div>
     """
-    
+
     soup = BeautifulSoup(html_content, 'html.parser')
     # Возвращаем список элементов, которые ElementIdentifier может обработать
     return list(soup.find_all('div'))
 
 @pytest_asyncio.fixture
-async def html_block_processing_service_with_real_processors():
-    """Create a real HTMLBlockProcessingService with *real* processors."""
+async def html_block_processing_service_with_real_processors(mock_asset_downloader):
+    """Create a real HTMLBlockProcessingService with *real* processors including ImageScriptProcessor."""
     service = HTMLBlockProcessingService(
         metadata_extractor=MetadataExtractorAdapter(),
         raw_processors=[
+            ImageScriptProcessor(asset_downloader=mock_asset_downloader), # NEW: Include ImageScriptProcessor
             TaskInfoProcessor(),
             InputFieldRemover(),
             MathMLRemover(),
@@ -70,31 +71,35 @@ async def html_block_processing_service_with_real_processors():
 
 @pytest.mark.asyncio
 async def test_html_block_processing_service_integration_with_real_processors(
-    html_block_processing_service_with_real_processors, 
-    sample_html_block_elements, 
+    html_block_processing_service_with_real_processors,
+    sample_html_block_elements,
     subject_info,
     mock_asset_downloader
 ):
     """Test HTMLBlockProcessingService with real processors and mocked asset downloader. This verifies the integration."""
-    
+    # NEW: The 'downloader' key in context is now 'asset_downloader' to match the new implementation
     context = {
         'subject_info': subject_info,
-        'source_url': 'https://ege.fipi.ru/bank/questions.php?proj=E040A72A1A3DABA14C90C97E0B6EE7DC&page=1',
+        'source_url': 'https://ege.fipi.ru/bank/questions.php?proj=E040A72A1A3DABA14C90C97E0B6EE7DC&page=1  ',
         'run_folder_page': Path('test_run_folder'),
-        'downloader': mock_asset_downloader,
+        'asset_downloader': mock_asset_downloader, # NEW: Use correct key
         'files_location_prefix': 'assets/',
-        'base_url': 'https://ege.fipi.ru/bank/'
+        'base_url': 'https://ege.fipi.ru/bank/  '
     }
-    
+
     problem = await html_block_processing_service_with_real_processors.process_block(
         block_elements=sample_html_block_elements,
         block_index=0,
         context=context
     )
-    
+
     # Проверяем что проблема была создана
     assert problem is not None
     assert problem.problem_id is not None
     assert problem.subject_name == subject_info.official_name
     assert problem.text is not None
     assert "текст задачи" in problem.text.lower()
+
+    # NEW: Verify that the asset downloader mock was called by ImageScriptProcessor
+    # We expect download_bytes to be called for the image in the HTML
+    mock_asset_downloader.download_bytes.assert_awaited() # Check if it was called at least once

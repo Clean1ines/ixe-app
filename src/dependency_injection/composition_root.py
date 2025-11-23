@@ -72,7 +72,7 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
 
     db_path = base_run_folder / "fipi_data.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Use configured database URL or fallback to file-based
     if db_url.startswith('sqlite:'):
         # For SQLite, use the file path
@@ -80,28 +80,29 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
     else:
         # For other databases, use the configured URL directly
         engine = create_async_engine(db_url, echo=db_echo, pool_size=db_pool_size, max_overflow=db_max_overflow)
-        
+
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
-    
+
     # Create tables in a separate thread to avoid the nested event loop issue
     import threading
     def run_create_tables():
         asyncio.run(create_tables(engine))
-    
+
     # Run the async function in a separate thread
     thread = threading.Thread(target=run_create_tables)
     thread.start()
     thread.join()
-    
+
     problem_repository: IProblemRepository = SQLAlchemyProblemRepository(session_factory)
 
     problem_factory: IProblemFactory = ProblemFactory()
 
     html_block_parser: IHTMLBlockParser = FIPIPageBlockParser()
-    
+
     metadata_extractor = MetadataExtractorAdapter()
 
-    image_processor = ImageScriptProcessor()
+    # NEW: Inject asset_downloader_impl into ImageScriptProcessor
+    image_processor = ImageScriptProcessor(asset_downloader=asset_downloader_impl)
     file_processor = FileLinkProcessor()
     task_info_processor = TaskInfoProcessor()
     input_field_remover = InputFieldRemover()
@@ -112,7 +113,7 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
         metadata_extractor=metadata_extractor,
         raw_processors=[
             image_processor,
-            file_processor, 
+            file_processor,
             task_info_processor,
             input_field_remover,
             mathml_remover,

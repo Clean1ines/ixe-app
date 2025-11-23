@@ -55,7 +55,7 @@ class PageScrapingService:
         self.problem_factory = problem_factory
         self.html_block_processing_service = html_block_processing_service
         self.html_block_parser = html_block_parser
-        
+
         # Use centralized configuration for timeout with graceful degradation
         if timeout is not None:
             self.timeout = timeout
@@ -77,20 +77,20 @@ class PageScrapingService:
     ) -> List[Any]:
         """
         Scrape a single page and return Problem entities.
-        
+
         Uses centralized configuration for base_url and timeout with graceful degradation.
         """
         # Use provided base_url or get from centralized config
         if base_url is None:
             try:
                 from src.core.config import config
-                base_url = getattr(config.scraping, 'base_url', 'https://fipi.ru  ')
+                base_url = getattr(config.scraping, 'base_url', 'https://fipi.ru    ')
             except ImportError:
-                base_url = 'https://fipi.ru  '  # Fallback to hardcoded default
-        
+                base_url = 'https://fipi.ru    '  # Fallback to hardcoded default
+
         # Use provided timeout or instance timeout
         actual_timeout = timeout or self.timeout
-        
+
         logger.info(f"Scraping page: {url} for subject: {subject_info.official_name}")
         if run_folder_page is None:
             run_folder_page = Path(".")
@@ -112,11 +112,11 @@ class PageScrapingService:
 
             logger.debug(f"PageScrapingService navigating page to {url}")
             await page.goto(url, wait_until="networkidle", timeout=actual_timeout * 1000)
-            
-            # NEW: Pass the page instance to the processors via context
+
+            # NEW: Pass the asset_downloader_impl to the processors via context
             processing_context = {
                 'run_folder_page': run_folder_page,
-                'playwright_page': page,  # NEW: Pass the page instance
+                'asset_downloader': self.asset_downloader_impl, # NEW: Pass the asset downloader
                 'base_url': base_url,
                 'files_location_prefix': files_location_prefix,
                 'subject_info': subject_info,
@@ -176,8 +176,8 @@ class PageScrapingService:
             problems = []
             for i, block_elements in enumerate(grouped_blocks):
                 try:
-                    # NEW: Add page to processing context for each block
-                    processing_context['playwright_page'] = page
+                    # NEW: Add asset_downloader to processing context for each block
+                    processing_context['asset_downloader'] = self.asset_downloader_impl
                     problem = await self.html_block_processing_service.process_block(
                         block_elements=block_elements,
                         block_index=i,
@@ -195,7 +195,7 @@ class PageScrapingService:
             # NEW: Release the browser manager back to the pool
             await self.browser_service.release_browser(browser_manager)
 
-        # NEW: The asset downloading happens within the processors using the page instance
+        # NEW: The asset downloading happens within the processors using the asset_downloader
         # So we calculate assets_count based on the actual files saved during processing
         page_assets_dir = run_folder_page / "assets"
         assets_count = sum(1 for _ in page_assets_dir.iterdir() if _.is_file()) if page_assets_dir.exists() else 0
