@@ -18,3 +18,5 @@ safety==2.3.5
 # Utilities
 typing-extensions==4.8.0
 attrs==23.1.0
+pydantic>=1.10.0
+python-dotenv>=1.0.0

@@ -3,6 +3,8 @@ Functional core for scraping progress logic.
 
 This module contains pure functions that determine scraping progress based on
 existing problems and configuration, without any external dependencies or side effects.
+
+Updated to use centralized configuration for base URLs.
 """
 from typing import List, Optional, Any, Dict, Tuple
 from src.domain.models.problem import Problem
@@ -18,11 +20,32 @@ def extract_page_number_from_url(url: str) -> Optional[int]:
     
     Returns 1-based page number or None if not found.
     """
-    if not url or "&page=" not in url:
+    # Use centralized configuration for base URL detection
+    try:
+        from src.core.config import config
+        base_url = getattr(config.scraping, 'base_url', 'https://fipi.ru')
+        browser_base_url = getattr(config.browser, 'base_url', 'https://ege.fipi.ru')
+    except ImportError:
+        # Fallback to hardcoded values if config is not available
+        base_url = 'https://fipi.ru'
+        browser_base_url = 'https://ege.fipi.ru'
+    
+    if not url or ("&page=" not in url and "page=" not in url):
+        return None
+    
+    # Check both base URLs
+    if not (url.startswith(base_url) or url.startswith(browser_base_url)):
         return None
     
     try:
-        page_param = url.split("&page=")[1].split("&")[0]
+        # Try different URL parameter patterns
+        if "&page=" in url:
+            page_param = url.split("&page=")[1].split("&")[0]
+        elif "?page=" in url:
+            page_param = url.split("?page=")[1].split("&")[0]
+        else:
+            return None
+            
         page_num = int(page_param)
         return page_num + 1  # Convert 0-based to 1-based
     except (ValueError, IndexError):
@@ -51,8 +74,12 @@ def determine_next_page(
         return 1
     
     # If start_page is explicitly set in config, use it
-    if config.start_page is not None:
-        return config.start_page
+    if config.start_page is not None and config.start_page != "init":
+        try:
+            return int(config.start_page)
+        except (ValueError, TypeError):
+            # If start_page is not a valid number, fall through
+            pass
     
     # If no problems exist, start from page 1
     if not existing_problems:
@@ -72,7 +99,7 @@ def determine_next_page(
         
         # If we know the highest page that exists, don't go beyond it
         if highest_known_page is not None and highest_scraped_page >= highest_known_page:
-            return highest_known_page + 1  # Will be caught by max_pages check later
+            return highest_known_page  # Return the last known page
         
         return highest_scraped_page + 1
     

@@ -9,12 +9,30 @@ from src.domain.interfaces.html_processing.i_raw_block_processor import IRawBloc
 class FileLinkProcessor(IRawBlockProcessor):
     """
     Downloads file links (pdf/doc/zip) and collects local paths.
-    Expects 'downloader', 'run_folder_page', 'files_location_prefix', 'base_url' in context.
+    Uses centralized configuration for assets directory and concurrent downloads.
     """
     async def process(self, raw_data: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         body_html = raw_data.get("body_html", "") or ""
+        
+        # Get base_url from context or centralized config
         base_url = context.get("base_url", "")
-        run_folder: Path = Path(context.get("run_folder_page", Path(".")))
+        if not base_url:
+            try:
+                from src.core.config import config
+                base_url = getattr(config.scraping, 'base_url', 'https://fipi.ru')
+            except ImportError:
+                base_url = 'https://fipi.ru'  # Fallback
+        
+        # Get run_folder from context or use centralized assets directory
+        run_folder = Path(context.get("run_folder_page", Path(".")))
+        if run_folder == Path("."):
+            try:
+                from src.core.config import config
+                assets_dir = getattr(config, 'assets_directory', './assets')
+                run_folder = Path(assets_dir)
+            except ImportError:
+                run_folder = Path("./assets")  # Fallback
+        
         files_prefix = context.get("files_location_prefix", "")
         downloader = context.get("downloader") or context.get("asset_downloader")
 
@@ -26,7 +44,15 @@ class FileLinkProcessor(IRawBlockProcessor):
         # Filter for file-like links
         candidates = [a for a in link_tags if any(a['href'].lower().endswith(ext) for ext in ('.pdf', '.doc', '.docx', '.zip', '.rar')) or 'file' in (a.get('class') or [])]
 
-        semaphore = asyncio.Semaphore(6)
+        # Use centralized configuration for concurrent downloads
+        try:
+            from src.core.config import config
+            max_concurrent = getattr(config, 'max_concurrent_downloads', 6)
+        except ImportError:
+            max_concurrent = 6  # Fallback
+        
+        semaphore = asyncio.Semaphore(max_concurrent)
+        
         async def fetch_and_record(a_tag, idx):
             href = a_tag.get('href')
             full_url = urljoin(base_url, href)

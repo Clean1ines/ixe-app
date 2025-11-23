@@ -9,6 +9,8 @@ Refactor notes:
   we re-parse those HTML fragments into BeautifulSoup Tag objects and pass them
   as grouped element lists.
 - No change to external behaviour of the method (iframe handling etc. preserved).
+
+Updated to use centralized configuration for timeouts and base URLs.
 """
 import logging
 import urllib.parse
@@ -41,6 +43,7 @@ class PageScrapingService:
         problem_factory: IProblemFactory,
         html_block_processing_service: HTMLBlockProcessingService,
         html_block_parser: Optional[IHTMLBlockParser] = None,
+        timeout: int = None
     ):
         """
         html_block_parser: optional. If provided, used to group DOM elements into blocks.
@@ -52,16 +55,42 @@ class PageScrapingService:
         self.problem_factory = problem_factory
         self.html_block_processing_service = html_block_processing_service
         self.html_block_parser = html_block_parser
+        
+        # Use centralized configuration for timeout with graceful degradation
+        if timeout is not None:
+            self.timeout = timeout
+        else:
+            try:
+                from src.core.config import config
+                self.timeout = getattr(config.browser, 'timeout_seconds', 30)
+            except ImportError:
+                self.timeout = 30  # Fallback to hardcoded default
 
     async def scrape_page(
         self,
         url: str,
         subject_info: SubjectInfo,
-        base_url: str,
-        timeout: int = 30,
+        base_url: str = None,
+        timeout: int = None,
         run_folder_page: Optional[Path] = None,
         files_location_prefix: str = ""
     ) -> List[Any]:
+        """
+        Scrape a single page and return Problem entities.
+        
+        Uses centralized configuration for base_url and timeout with graceful degradation.
+        """
+        # Use provided base_url or get from centralized config
+        if base_url is None:
+            try:
+                from src.core.config import config
+                base_url = getattr(config.scraping, 'base_url', 'https://fipi.ru')
+            except ImportError:
+                base_url = 'https://fipi.ru'  # Fallback to hardcoded default
+        
+        # Use provided timeout or instance timeout
+        actual_timeout = timeout or self.timeout
+        
         logger.info(f"Scraping page: {url} for subject: {subject_info.official_name}")
         if run_folder_page is None:
             run_folder_page = Path(".")
@@ -73,7 +102,7 @@ class PageScrapingService:
 
         # 1) fetch main page
         try:
-            page_content = await self.browser_service.get_page_content(url, timeout)
+            page_content = await self.browser_service.get_page_content(url, actual_timeout)
         except Exception as e:
             logger.error(f"Failed to get page content from {url}: {e}", exc_info=True)
             raise
@@ -90,7 +119,7 @@ class PageScrapingService:
                 full_iframe_url = urllib.parse.urljoin(url, iframe_src)
                 actual_source_url = full_iframe_url
                 try:
-                    actual_page_content = await self.browser_service.get_page_content(full_iframe_url, timeout)
+                    actual_page_content = await self.browser_service.get_page_content(full_iframe_url, actual_timeout)
                     logger.debug(f"Fetched iframe content ({len(actual_page_content or '')} chars) from {full_iframe_url}")
                 except Exception as e_iframe:
                     logger.error(f"Failed to get iframe content {full_iframe_url}: {e_iframe}", exc_info=True)

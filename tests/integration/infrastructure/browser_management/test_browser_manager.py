@@ -41,7 +41,7 @@ async def test_browser_manager_get_page_content(browser_manager):
 @pytest.mark.asyncio
 async def test_browser_manager_get_page_content_timeout(browser_manager):
     # Используем зарезервированный TEST-NET адрес (RFC 5737)
-    url = "http://192.0.2.1"
+    url = "http://192.0.2.1/delay/10"
     timeout = 2
     
     with pytest.raises(Exception):

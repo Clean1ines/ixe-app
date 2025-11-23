@@ -2,6 +2,7 @@ import asyncio
 from pathlib import Path
 from typing import Tuple
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
 from src.application.services.page_scraping_service import PageScrapingService
 from src.application.services.html_block_processing_service import HTMLBlockProcessingService
@@ -25,14 +26,57 @@ from src.application.services.html_parsing.i_html_block_parser import IHTMLBlock
 from src.application.services.html_parsing.fipa_page_block_parser import FIPIPageBlockParser
 from src.infrastructure.adapters.html_processing.metadata_extractor_adapter import MetadataExtractorAdapter
 
-def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseCase, IBrowserService, IAssetDownloader]:
-    asset_downloader_impl: IAssetDownloader = PlaywrightAssetDownloaderAdapter(timeout=30)
+# Import centralized configuration
+try:
+    from src.core.config import config
+    CENTRAL_CONFIG_AVAILABLE = True
+except ImportError:
+    CENTRAL_CONFIG_AVAILABLE = False
+    # Create a simple fallback config
+    class FallbackConfig:
+        database = type('Database', (), {'url': 'sqlite:///./ege_problems.db'})()
+        browser = type('Browser', (), {'timeout_seconds': 30})()
+        scraping = type('Scraping', (), {'asset_download_timeout': 60})()
+    config = FallbackConfig()
 
-    browser_service: IBrowserService = BrowserPoolServiceAdapter(pool_size=2)
+def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseCase, IBrowserService, IAssetDownloader]:
+    # Use centralized configuration for timeouts with graceful degradation
+    if CENTRAL_CONFIG_AVAILABLE:
+        asset_download_timeout = getattr(config.scraping, 'asset_download_timeout', 60)
+        browser_timeout = getattr(config.browser, 'timeout_seconds', 30)
+        pool_size = 2  # Could be configurable in the future
+    else:
+        asset_download_timeout = 60
+        browser_timeout = 30
+        pool_size = 2
+
+    asset_downloader_impl: IAssetDownloader = PlaywrightAssetDownloaderAdapter(timeout=asset_download_timeout)
+
+    browser_service: IBrowserService = BrowserPoolServiceAdapter(pool_size=pool_size)
+
+    # Use centralized configuration for database URL
+    if CENTRAL_CONFIG_AVAILABLE:
+        db_url = getattr(config.database, 'url', 'sqlite:///./ege_problems.db')
+        db_echo = getattr(config.database, 'echo', False)
+        db_pool_size = getattr(config.database, 'pool_size', 20)
+        db_max_overflow = getattr(config.database, 'max_overflow', 30)
+    else:
+        db_url = 'sqlite:///./ege_problems.db'
+        db_echo = False
+        db_pool_size = 20
+        db_max_overflow = 30
 
     db_path = base_run_folder / "fipi_data.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    engine = create_async_engine(f"sqlite+aiosqlite:///{db_path}")
+    
+    # Use configured database URL or fallback to file-based
+    if db_url.startswith('sqlite:'):
+        # For SQLite, use the file path
+        engine = create_async_engine(f"sqlite+aiosqlite:///{db_path}", echo=db_echo)
+    else:
+        # For other databases, use the configured URL directly
+        engine = create_async_engine(db_url, echo=db_echo, pool_size=db_pool_size, max_overflow=db_max_overflow)
+        
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
     
     async def create_tables():
@@ -69,12 +113,14 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
     progress_service = ScrapingProgressService(problem_repository=problem_repository)
     progress_reporter = ScrapingProgressReporter()
 
+    # Use centralized configuration for page scraping service timeout
     page_scraping_service = PageScrapingService(
         browser_service=browser_service,
         asset_downloader_impl=asset_downloader_impl,
         problem_factory=problem_factory,
         html_block_processing_service=html_block_processing_service,
         html_block_parser=html_block_parser,
+        timeout=browser_timeout
     )
 
     scrape_use_case = ScrapeSubjectUseCase(
