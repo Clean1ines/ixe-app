@@ -21,55 +21,160 @@ def extract_block_pairs(dom_or_html: Union[str, BeautifulSoup]) -> List[Tuple[st
     """
     Из DOM (или HTML-строки) извлекает упорядоченный список пар (header_html, body_html).
     
-    НОВАЯ ЛОГИКА:
-    - Ищем элементы с классом 'qblock'
-    - Если qblock не имеет ID (или ID начинается не с 'q'), считаем его общим контекстом
-    - Если qblock имеет ID, начинающийся с 'q', считаем его индивидуальным заданием
-    - Для индивидуальных заданий: header - это div с id="i<ID>" (где ID из qblock), body - сам qblock
-    - Общие контексты прикрепляются к следующему индивидуальному заданию (если применимо)
+    Поддерживает два сценария:
+    1. Старый паттерн: элементы с классами 'problem-header' и 'problem-body'
+    2. Новый паттерн: qblock-и с и без ID, где qblock без ID - общий контекст
     """
     if isinstance(dom_or_html, str):
         dom = extract_dom_tree(dom_or_html)
     else:
         dom = dom_or_html
 
+    # Попробуем сначала старый паттерн
+    pairs = _extract_block_pairs_by_header_body_pattern(dom)
+    
+    # Если не нашли ничего по старому паттерну, используем новый
+    if not pairs:
+        pairs = _extract_block_pairs_by_qblocks_pattern_with_grouping(dom)
+    
+    return pairs
+
+
+def _extract_block_pairs_by_header_body_pattern(dom: BeautifulSoup) -> List[Tuple[str, str]]:
+    """
+    Старая логика: ищет элементы с классами 'problem-header' и 'problem-body'.
+    """
+    pairs: List[Tuple[str, str]] = []
+
+    # Простая и надёжная эвристика: пара — это элемент с классом "problem-header"
+    # и ближайший следующий sibling с классом "problem-body" (или похожие варианты).
+    headers = _find_header_elements(dom)
+    
+    for header in headers:
+        body = _find_body_element_for_header(header)
+        header_html = str(header)
+        body_html = str(body) if body is not None else ""
+        pairs.append((header_html, body_html))
+    
+    return pairs
+
+
+def _find_header_elements(dom: BeautifulSoup) -> List[Tag]:
+    """
+    Находит элементы, которые могут быть заголовками задач.
+    """
+    # Основной паттерн: элементы с классом "problem-header"
+    headers = dom.find_all(class_="problem-header")
+    if not headers:
+        # fallback: элементы с тегами h2, h3 и классом, содержащим "task"
+        headers = dom.find_all(lambda el: el.name in ("h3", "h2") and "task" in (el.get("class") or []))
+    return headers
+
+
+def _find_body_element_for_header(header: Tag) -> Tag | None:
+    """
+    Находит элемент, который может быть телом задачи для заданного заголовка.
+    """
+    # ищем ближайший элемент после header, который выглядит как тело блока
+    # допустим, это следующий sibling div
+    body = None
+    sib = header.find_next_sibling()
+    while sib and (not (isinstance(sib, Tag))):
+        sib = sib.find_next_sibling() if hasattr(sib, "find_next_sibling") else None
+    # Проверяем несколько вариантов, остановимся на первом диве
+    while sib and isinstance(sib, Tag) and body is None:
+        if sib.name == "div" or "problem-body" in (sib.get("class") or []):
+            body = sib
+            break
+        sib = sib.find_next_sibling()
+    # Если не нашли, попробуем поиск внутри общего контейнера
+    if body is None:
+        possible = header.parent.find_all(class_="problem-body") if header.parent else []
+        body = possible[0] if possible else None
+    return body
+
+
+def _extract_block_pairs_by_qblocks_pattern_with_grouping(dom: BeautifulSoup) -> List[Tuple[str, str]]:
+    """
+    Новая логика: Обработка qblock-ов как на страницах ФИПИ с учетом группировки.
+    Общий qblock без ID (или ID не начинается с 'q') может содержать общий контекст
+    для следующих за ним qblock-ов с ID, до следующего общего qblock-а или до конца.
+    Возвращает пары (header, body), где body может содержать несколько qblock-ов с общим контекстом.
+    """
     pairs: List[Tuple[str, str]] = []
     qblocks = dom.find_all(class_='qblock')
     
-    common_context = None
+    # Группируем qblock-и: сначала общий контекст (если есть), потом список индивидуальных qblock-ов
+    groups = _group_qblocks_by_context(qblocks)
+    
+    for group in groups:
+        common_context = group['common_context']
+        individual_qblocks = group['individual_qblocks']
+        
+        if not individual_qblocks:
+            # Если в группе нет индивидуальных qblock-ов, пропускаем её
+            continue
+            
+        if common_context:
+            # Если есть общий контекст, объединяем все индивидуальные qblock-и в одну задачу
+            # Header: используем ID первого qblock в группе или генерируем общий
+            first_qblock_id = individual_qblocks[0].get('id', '')[1:] if individual_qblocks else 'group'
+            header_html = f'<div id="i{first_qblock_id}" class="header-container">Задание {first_qblock_id}</div>'
+            
+            # Body: объединяем общий контекст и все индивидуальные qblock-и
+            body_parts = [common_context] + [str(qb) for qb in individual_qblocks]
+            body_html = ''.join(body_parts)
+            
+            pairs.append((header_html, body_html))
+        else:
+            # Если нет общего контекста, создаем отдельные пары для каждого индивидуального qblock
+            for qblock in individual_qblocks:
+                qblock_id = qblock.get('id', '')[1:]  # Убираем 'q' префикс
+                header_html = f'<div id="i{qblock_id}" class="header-container">Задание {qblock_id}</div>'
+                body_html = str(qblock)
+                
+                pairs.append((header_html, body_html))
+
+    return pairs
+
+
+def _group_qblocks_by_context(qblocks: List[Tag]) -> List[Dict]:
+    """
+    Группирует qblock-и по общему контексту.
+    
+    Args:
+        qblocks: Список BeautifulSoup Tag объектов с классом 'qblock'
+        
+    Returns:
+        Список словарей, где каждый словарь содержит:
+        - 'common_context': HTML-строка общего контекста (или None)
+        - 'individual_qblocks': Список BeautifulSoup Tag объектов индивидуальных qblock-ов
+    """
+    groups = []
+    current_group = {'common_context': None, 'individual_qblocks': []}
     
     for qblock in qblocks:
         qblock_id = qblock.get('id', '')
         
-        # Проверяем, является ли это общим qblock-ом (без ID или ID не начинается с 'q')
         if not qblock_id or not qblock_id.startswith('q'):
-            # Сохраняем общий контекст
-            common_context = str(qblock)
-            continue
-        
-        # Это индивидуальное задание (ID начинается с 'q')
-        # Создаем header с id="i<ID>"
-        task_id = qblock_id[1:]  # Убираем 'q' префикс
-        header_html = f'<div id="i{task_id}" class="header-container">Задание {task_id}</div>'
-        
-        # Создаем body, объединяя общий контекст (если есть) с индивидуальным qblock
-        individual_qblock_html = str(qblock)
-        
-        if common_context:
-            # Вставляем общий контекст в начало индивидуального qblock
-            # Это грубое объединение, в реальности может потребоваться более точное вмешательство в DOM
-            body_html = f"{common_context}{individual_qblock_html}"
-        else:
-            body_html = individual_qblock_html
+            # Это общий контекст
+            # Если в текущей группе уже есть индивидуальные qblock-и, 
+            # завершаем её и начинаем новую
+            if current_group['individual_qblocks']:
+                groups.append(current_group)
+                current_group = {'common_context': None, 'individual_qblocks': []}
             
-        pairs.append((header_html, body_html))
-        
-        # Сбрасываем общий контекст после использования (он может применяться только к следующему заданию)
-        # В реальности логика может быть сложнее: общий контекст может применяться к нескольким заданиям
-        # или до следующего общего контекста. Для упрощения сбрасываем после первого использования.
-        common_context = None
-
-    return pairs
+            # Устанавливаем общий контекст для новой группы
+            current_group['common_context'] = str(qblock)
+        else:
+            # Это индивидуальный qblock
+            current_group['individual_qblocks'].append(qblock)
+    
+    # Добавляем последнюю группу, если она не пуста
+    if current_group['individual_qblocks'] or current_group['common_context']:
+        groups.append(current_group)
+    
+    return groups
 
 
 def transform_blocks_to_raw_data(block_pairs: Iterable[Tuple[str, str]]) -> List[Dict]:

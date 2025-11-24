@@ -47,17 +47,15 @@ class TestExtractBlockPairsWithContext:
         """
         pairs = extract_block_pairs(html)
         
-        # Should create pairs for each individual qblock with the common context
-        # In our new implementation, it should return (header, qblock) pairs
-        # where header contains the task number and qblock is the full qblock
-        assert len(pairs) == 2  # Two individual qblocks
-        header1, body1 = pairs[0]
-        header2, body2 = pairs[1]
+        # Should create ONE pair for the group of individual qblocks with the common context
+        # In our new implementation with grouping, all qblocks after a common context are combined
+        assert len(pairs) == 1  # One combined pair for the group
+        header, body = pairs[0]
         
-        assert 'i001' in header1  # Should create a header with the ID
-        assert 'q001' in body1    # Should contain the full qblock
-        assert 'i002' in header2
-        assert 'q002' in body2
+        assert 'i001' in header  # Should create a header with the ID of the first qblock in the group
+        assert 'Общее задание' in body    # Should contain the common context
+        assert 'q001' in body    # Should contain the first qblock
+        assert 'q002' in body    # Should contain the second qblock
 
     def test_extract_block_pairs_without_common_qblock(self):
         """Test extraction when there are only individual qblocks with IDs."""
