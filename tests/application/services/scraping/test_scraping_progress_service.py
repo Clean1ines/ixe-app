@@ -6,7 +6,7 @@ import pytest
 from datetime import datetime
 from src.application.services.scraping.scraping_progress_service import ScrapingProgressService
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.models.problem import Problem
 
 class MockProblemRepository:

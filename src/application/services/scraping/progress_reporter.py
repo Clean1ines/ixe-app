@@ -8,7 +8,7 @@ import sys
 from typing import Optional, TextIO, Any, Dict, List, Tuple
 from datetime import timedelta
 from src.application.value_objects.scraping.scraping_result import ScrapingResult
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 
 class ScrapingProgressReporter:
     """

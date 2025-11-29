@@ -15,7 +15,7 @@ from src.infrastructure.processors.html.task_info_processor import TaskInfoProce
 from src.infrastructure.processors.html.input_field_remover import InputFieldRemover
 from src.infrastructure.processors.html.mathml_remover import MathMLRemover
 from src.infrastructure.processors.html.unwanted_element_remover import UnwantedElementRemover
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 
 @pytest.fixture
 def mock_asset_downloader():

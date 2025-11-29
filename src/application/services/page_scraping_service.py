@@ -22,7 +22,7 @@ from bs4 import BeautifulSoup, Tag
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
 from src.application.interfaces.factories.i_problem_factory import IProblemFactory
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.application.services.html_block_processing_service import HTMLBlockProcessingService
 from src.application.services.html_parsing.i_html_block_parser import IHTMLBlockParser
 

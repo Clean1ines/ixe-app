@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
 from src.application.value_objects.scraping.scraping_result import ScrapingResult
 

@@ -13,7 +13,7 @@ from src.domain.interfaces.repositories.i_problem_repository import IProblemRepo
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.application.interfaces.factories.i_problem_factory import IProblemFactory
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.models.problem import Problem
 from src.infrastructure.adapters.external_services.asset_downloader_adapter import AssetDownloaderAdapter
 

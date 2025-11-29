@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional, List
 
 from src.domain.interfaces.html_processing.i_raw_block_processor import IRawBlockProcessor
 from src.domain.models.problem import Problem
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.infrastructure.adapters.html_processing.metadata_extractor_adapter import MetadataExtractorAdapter
 
 logger = logging.getLogger(__name__)

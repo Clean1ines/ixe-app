@@ -11,7 +11,7 @@ import urllib.parse # ИМПОРТИРУЕМ urllib.parse В НАЧАЛЕ ФАЙ
 from pathlib import Path
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
 from src.dependency_injection.composition_root import create_scraping_components

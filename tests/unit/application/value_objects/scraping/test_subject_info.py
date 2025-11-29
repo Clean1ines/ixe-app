@@ -2,7 +2,7 @@
 Unit tests for the SubjectInfo value object.
 """
 import pytest
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 
 
 class TestSubjectInfoCreation:

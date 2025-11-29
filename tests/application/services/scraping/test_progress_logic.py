@@ -8,7 +8,7 @@ import pytest
 from datetime import datetime
 from src.application.services.scraping.progress_logic import determine_next_page, extract_page_number_from_url
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.models.problem import Problem
 from tests.application.services.scraping.fakes.fake_problem_repository import FakeProblemRepository
 

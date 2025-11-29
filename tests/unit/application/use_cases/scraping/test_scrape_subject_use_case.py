@@ -12,7 +12,7 @@ from src.domain.interfaces.external_services.i_browser_service import IBrowserSe
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
 from src.application.interfaces.factories.i_problem_factory import IProblemFactory
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.models.problem import Problem
 
 @pytest.fixture

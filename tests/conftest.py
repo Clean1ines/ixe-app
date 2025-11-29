@@ -9,7 +9,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 try:
-    from src.application.value_objects.scraping.subject_info import SubjectInfo
+    from src.domain.value_objects.scraping.subject_info import SubjectInfo
     from src.domain.models.problem import Problem
 except ImportError as e:
     print(f"Import error in conftest: {e}")

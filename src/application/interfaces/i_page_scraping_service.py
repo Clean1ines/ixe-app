@@ -12,7 +12,7 @@ import abc
 from pathlib import Path
 from typing import List, Optional, Any, Dict, Tuple
 from src.domain.models.problem import Problem
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 
 
 class IPageScrapingService(abc.ABC):

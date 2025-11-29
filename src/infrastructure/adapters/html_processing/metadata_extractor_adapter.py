@@ -2,7 +2,7 @@ import re
 from typing import Dict, Any, Optional, List, Tuple 
 from bs4 import Tag
 from pathlib import Path
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from typing import Optional, List, Tuple, Dict, Any
 
 class MetadataExtractorAdapter:

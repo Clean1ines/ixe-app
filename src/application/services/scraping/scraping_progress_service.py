@@ -8,7 +8,7 @@ import logging
 from typing import List, Optional
 from src.domain.interfaces.repositories.i_problem_repository import IProblemRepository
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
-from src.application.value_objects.scraping.subject_info import SubjectInfo
+from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.models.problem import Problem
 from src.application.services.scraping.progress_logic import determine_next_page, extract_page_number_from_url
 
