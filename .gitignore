@@ -55,3 +55,4 @@ safety_report.json
 complexity_report.txt
 .env
 *.log
+data/
