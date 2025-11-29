@@ -27,6 +27,7 @@ from src.application.services.html_block_processing_service import HTMLBlockProc
 from src.application.services.html_parsing.i_html_block_parser import IHTMLBlockParser
 
 from src.infrastructure.adapters.external_services.asset_downloader_adapter import AssetDownloaderAdapter
+from src.infrastructure.services.page_scraping.components.iframe_handler import IframeHandler
 
 # Import pure core fallbacks
 from src.domain.html_processing.pure_html_transforms import (
@@ -84,9 +85,9 @@ class PageScrapingService:
         if base_url is None:
             try:
                 from src.core.config import config
-                base_url = getattr(config.scraping, 'base_url', 'https://fipi.ru    ')
+                base_url = getattr(config.scraping, 'base_url', 'https://fipi.ru')
             except ImportError:
-                base_url = 'https://fipi.ru    '  # Fallback to hardcoded default
+                base_url = 'https://fipi.ru'  # Fallback to hardcoded default
 
         # Use provided timeout or instance timeout
         actual_timeout = timeout or self.timeout
@@ -127,30 +128,11 @@ class PageScrapingService:
             actual_page_content = await page.content()
             actual_source_url = url
 
-            # 2) iframe handling (preserve existing behaviour)
-            page_soup = BeautifulSoup(actual_page_content or "", "html.parser")
-            questions_iframe = page_soup.find('iframe', id='questions_container')
-
-            if questions_iframe:
-                iframe_src = questions_iframe.get('src')
-                if iframe_src:
-                    full_iframe_url = urllib.parse.urljoin(url, iframe_src)
-                    actual_source_url = full_iframe_url
-                    try:
-                        # NEW: Navigate to iframe URL if needed
-                        await page.goto(full_iframe_url, wait_until="networkidle", timeout=actual_timeout * 1000)
-                        actual_page_content = await page.content()
-                        logger.debug(f"Fetched iframe content ({len(actual_page_content or '')} chars) from {full_iframe_url}")
-                    except Exception as e_iframe:
-                        logger.error(f"Failed to get iframe content {full_iframe_url}: {e_iframe}", exc_info=True)
-                        logger.warning("Falling back to main page content.")
-                        await page.goto(url, wait_until="networkidle", timeout=actual_timeout * 1000) # Go back to original URL
-                        actual_page_content = await page.content()
-                        actual_source_url = url
-                else:
-                    logger.warning(f"Iframe found on {url} without 'src'; using main page content.")
-            else:
-                logger.debug(f"No questions iframe found on {url}.")
+            # РЕФАКТОРИНГ: Заменяем iframe логику на IframeHandler
+            iframe_handler = IframeHandler()
+            actual_page_content, actual_source_url = await iframe_handler.handle_iframe_content(
+                page, url, actual_timeout, actual_page_content
+            )
 
             # 3) parse grouped blocks: prefer injected parser, else fallback to pure core
             grouped_blocks = []
