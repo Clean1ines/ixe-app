@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Domain interface for asset downloading operations.
 
@@ -7,7 +8,6 @@ of the specific downloading implementation (e.g., httpx, requests, playwright).
 """
 import abc
 from pathlib import Path
-from typing import Optional
 
 
 class IAssetDownloader(abc.ABC):
@@ -18,12 +18,10 @@ class IAssetDownloader(abc.ABC):
     @abc.abstractmethod
     async def initialize(self):
         """Initialize the asset downloader resources."""
-        pass
 
     @abc.abstractmethod
     async def close(self):
         """Close the asset downloader resources."""
-        pass
 
     @abc.abstractmethod
     async def download(self, asset_url: str, destination_path: Path) -> bool:
@@ -37,7 +35,6 @@ class IAssetDownloader(abc.ABC):
         Returns:
             True if the download was successful, False otherwise.
         """
-        pass
 
     @abc.abstractmethod
     async def download_bytes(self, asset_url: str) -> Optional[bytes]:
@@ -50,4 +47,3 @@ class IAssetDownloader(abc.ABC):
         Returns:
             The content of the asset as bytes if successful, otherwise None.
         """
-        pass

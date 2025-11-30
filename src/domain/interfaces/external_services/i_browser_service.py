@@ -1,3 +1,4 @@
+from typing import Any
 """
 Domain interface for Browser service operations.
 
@@ -6,7 +7,6 @@ allowing the domain layer to remain independent of the specific browser
 automation implementation (e.g., Playwright, Selenium).
 """
 from abc import abstractmethod
-from typing import Any # Any used here because the concrete browser instance type is external
 
 
 class IBrowserService:

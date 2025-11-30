@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Application interface for Page Scraping Service operations.
 
@@ -10,8 +11,6 @@ operation (scraping a page and returning domain entities) rather than a core dom
 """
 import abc
 from pathlib import Path
-from typing import Optional
-from src.domain.models.problem import Problem
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.application.value_objects.scraping.page_scraping_result import PageScrapingResult
 
@@ -47,4 +46,3 @@ class IPageScrapingService(abc.ABC):
         Returns:
             A PageScrapingResult containing Problem entities and assets count.
         """
-        pass

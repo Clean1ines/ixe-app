@@ -1,12 +1,13 @@
+from typing import Any, Dict, List
 """Fixed interface for result aggregation - uses domain objects only"""
 import abc
-from typing import List, Dict, Any
 from datetime import datetime
 from src.domain.value_objects.scraping.domain_scraping_result import DomainScrapingResult
 
+
 class IResultAggregator(abc.ABC):
     """Domain interface for aggregating scraping results"""
-    
+
     @abc.abstractmethod
     def aggregate_results(
         self,
@@ -18,4 +19,3 @@ class IResultAggregator(abc.ABC):
         end_time: datetime
     ) -> DomainScrapingResult:
         """Aggregate page results into final domain result"""
-        pass

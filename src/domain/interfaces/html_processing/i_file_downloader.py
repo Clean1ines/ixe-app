@@ -1,11 +1,12 @@
+from typing import List, Tuple
 """Interface for file downloading"""
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Tuple
+
 
 class IFileDownloader(ABC):
     """Handles file downloading operations"""
-    
+
     @abstractmethod
     async def download_files(
         self,
@@ -17,15 +18,14 @@ class IFileDownloader(ABC):
     ) -> List[str]:
         """
         Download multiple files concurrently
-        
+
         Args:
             file_links: List of (link_element, href) tuples
             base_url: Base URL for resolving relative links
             download_dir: Directory to save files
             files_prefix: Prefix for file paths
             max_concurrent: Maximum concurrent downloads
-            
+
         Returns:
             List of local file paths
         """
-        pass

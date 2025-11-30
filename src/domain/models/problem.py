@@ -1,14 +1,7 @@
-from dataclasses import dataclass
+from typing import List, Optional
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, List, Any, Dict, Tuple
-from typing import Optional, List, Tuple, Dict, Any
-from .validators import (
-    CompositeProblemValidator,
-    TextValidator,
-    DifficultyValidator,
-    TaskNumberValidator,
-    ExamPartValidator,
-)
+
 
 @dataclass
 class Problem:
@@ -38,46 +31,47 @@ class Problem:
 
     # Extracted attributes
     answer: Optional[str] = None           # Correct answer if known
-    images: List[str] = None               # List of paths to associated images
-    files: List[str] = None                # List of paths to associated files
-    kes_codes: List[str] = None            # KES codes extracted from HTML
-    topics: List[str] = None               # Topics derived from KES codes
-    kos_codes: List[str] = None            # KOS codes extracted from HTML
+    images: List[str] = field(default_factory=list)               # List of paths to associated images
+    files: List[str] = field(default_factory=list)                # List of paths to associated files
+    kes_codes: List[str] = field(default_factory=list)            # KES codes extracted from HTML
+    topics: List[str] = field(default_factory=list)               # Topics derived from KES codes
+    kos_codes: List[str] = field(default_factory=list)            # KOS codes extracted from HTML
     form_id: Optional[str] = None          # Form ID if present in HTML
 
     # FIPI project specific attribute
     fipi_proj_id: Optional[str] = None     # ID of the FIPI project this problem belongs to
 
     # Metadata
-    created_at: datetime = None
+    created_at: datetime = field(default_factory=datetime.now)
     updated_at: Optional[datetime] = None
 
     def __post_init__(self):
         """Validate the problem after initialization."""
         # Initialize default values for mutable defaults
-        if self.images is None:
-            self.images = []
-        if self.files is None:
-            self.files = []
-        if self.kes_codes is None:
-            self.kes_codes = []
-        if self.topics is None:
-            self.topics = []
-        if self.kos_codes is None:
-            self.kos_codes = []
-        if self.created_at is None:
-            self.created_at = datetime.now()
         if self.updated_at is None:
             self.updated_at = datetime.now()
 
-        # Create and use composite validator for invariants
-        validator = CompositeProblemValidator([
-            TextValidator(),
-            ExamPartValidator(),
-            TaskNumberValidator(),
-            DifficultyValidator(),
-        ])
-        validator.validate(self)
+        # Validate the problem according to business rules
+        self._validate()
+
+    def _validate(self):
+        """Internal validation method to avoid circular imports."""
+        # Validate text
+        if not self.text or not self.text.strip():
+            raise ValueError("Problem text cannot be empty")
+
+        # Validate exam_part if present
+        if self.exam_part and self.exam_part not in ["Part 1", "Part 2"]:
+            raise ValueError(f"Invalid exam part: {self.exam_part}")
+
+        # Validate task_number if present
+        if self.task_number is not None and (self.task_number < 1 or self.task_number > 19):
+            raise ValueError(f"Task number {self.task_number} is out of range")
+
+        # Validate difficulty_level if present
+        valid_difficulties = ["basic", "advanced"]
+        if self.difficulty_level and self.difficulty_level not in valid_difficulties:
+            raise ValueError(f"Invalid difficulty level: {self.difficulty_level}")
 
     # Identity methods required for Entities
     def __eq__(self, other):
@@ -106,12 +100,8 @@ class Problem:
         return len(self.images) > 0
 
     def get_total_assets_count(self) -> int:
-
         """Calculate the total number of images and files associated with the problem."""
-
         return len(self.images) + len(self.files)
-
-
 
     def has_files(self) -> bool:
         """Check if the problem has associated files."""

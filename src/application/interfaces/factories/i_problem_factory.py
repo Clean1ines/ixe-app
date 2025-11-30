@@ -1,29 +1,19 @@
-"""
-Application interface for Problem factory operations.
-
-This interface defines the contract for creating Problem entities from raw scraped data,
-allowing the application layer to remain independent of the specific creation logic.
-"""
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Any
 from src.domain.models.problem import Problem
 
 
 class IProblemFactory(ABC):
-    """
-    Interface for creating Problem entities from raw data.
-    """
+    """Interface for Problem factory components."""
 
     @abstractmethod
-    def create_problem(self, raw_data: Dict[str, Any]) -> Problem:
-        """
-        Create a Problem entity from raw scraped data.
-
+    def create_problem(self, raw_data: dict[str, Any]) -> Problem:
+        """Create a Problem instance from raw data.
+        
         Args:
-            raw_data: Dictionary containing raw data extracted from HTML.
-
+            raw_data: Dictionary containing problem data
+            
         Returns:
-            A fully constructed Problem entity.
+            Problem: Created problem instance
         """
-        raise NotImplementedError
-
+        pass

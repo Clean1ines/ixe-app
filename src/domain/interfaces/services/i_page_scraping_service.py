@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Domain interface for page scraping service.
 
@@ -6,7 +7,6 @@ and converting it into domain entities (Problem), making it a domain service.
 """
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional
 
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.value_objects.scraping.page_scraping_result import PageScrapingResult
@@ -42,4 +42,3 @@ class IPageScrapingService(ABC):
         Returns:
             PageScrapingResult containing Problem entities and assets count.
         """
-        pass

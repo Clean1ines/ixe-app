@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Application service that orchestrates page scraping using domain services.
 
@@ -6,7 +7,6 @@ concerns like logging, error handling, and progress reporting.
 """
 import logging
 from pathlib import Path
-from typing import Optional
 
 from src.domain.interfaces.services.i_page_scraping_service import IPageScrapingService
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class PageScrapingOrchestrator:
     """
     Application service for orchestrating page scraping operations.
-    
+
     This service doesn't contain scraping logic itself but coordinates
     between domain services and application concerns.
     """
@@ -37,7 +37,7 @@ class PageScrapingOrchestrator:
     ) -> PageScrapingResult:
         """
         Orchestrate page scraping with application-level concerns.
-        
+
         Args:
             url: The URL of the page to scrape.
             subject_info: Subject information value object.
@@ -50,7 +50,7 @@ class PageScrapingOrchestrator:
             PageScrapingResult from domain service.
         """
         logger.info(f"Starting page scraping for URL: {url}")
-        
+
         try:
             result = await self._page_scraping_service.scrape_page(
                 url=url,
@@ -60,11 +60,11 @@ class PageScrapingOrchestrator:
                 run_folder_page=run_folder_page,
                 files_location_prefix=files_location_prefix
             )
-            
+
             logger.info(f"Page scraping completed: {len(result.problems)} problems, "
-                       f"{result.assets_downloaded} assets downloaded")
+                        f"{result.assets_downloaded} assets downloaded")
             return result
-            
+
         except Exception as e:
             logger.error(f"Page scraping failed for {url}: {e}")
             # Return empty result rather than raising to allow continuation

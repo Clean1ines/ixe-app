@@ -1,7 +1,6 @@
-import asyncio
+from typing import Optional
 import logging
 from pathlib import Path
-from typing import Optional
 from datetime import datetime
 
 from src.domain.interfaces.services.i_page_scraping_service import IPageScrapingService
@@ -15,7 +14,6 @@ from src.domain.interfaces.scraping.i_progress_reporter import IProgressReporter
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.value_objects.scraping.scraping_result import ScrapingResult
-from src.domain.models.problem import Problem
 
 from src.application.use_cases.scraping.components import PageProcessor, ScrapingLoopController, ResultComposer
 
@@ -41,15 +39,15 @@ class _NoopProgressReporter(IProgressReporter):
         force_restart: bool
     ) -> None:
         pass
-    
+
     def report_page_progress(self, page: int, total_pages: Optional[int], 
-                           problems_found: int, problems_saved: int, 
-                           assets_downloaded: int, duration_seconds: float) -> None:
+                             problems_found: int, problems_saved: int, 
+                             assets_downloaded: int, duration_seconds: float) -> None:
         pass
-        
+
     def report_page_error(self, page: int, error: str) -> None:
         pass
-        
+
     def report_summary(self, result: ScrapingResult) -> None:
         pass
 
@@ -75,7 +73,7 @@ class ScrapeSubjectUseCase:
 
     async def execute(self, subject_info: SubjectInfo, config: ScrapingConfig) -> ScrapingResult:
         start_time = datetime.now()
-        
+
         # Разворачиваем параметры конфига в примитивы для вызова Domain Interface
         self.progress_reporter.report_start(
             subject_info, 
@@ -83,7 +81,7 @@ class ScrapeSubjectUseCase:
             config.max_pages, 
             config.force_restart
         )
-        
+
         logger.info(f"Starting scraping for subject: {subject_info.official_name}")
 
         if config.force_restart:
@@ -96,24 +94,24 @@ class ScrapeSubjectUseCase:
                 config.start_page, 
                 config.force_restart
             )
-            
+
             base_run_folder = Path("data") / subject_info.alias
-            
+
             # Компоненты Application Layer продолжают получать полный config
             page_processor = PageProcessor(
                 self.page_scraping_service,
                 self.problem_repository,
                 self.progress_reporter
             )
-            
+
             loop_result = await ScrapingLoopController().run_loop(
                 start_page, subject_info, config, base_run_folder, page_processor
             )
-            
+
             final_result = ResultComposer().compose_final_result(
                 subject_info, loop_result, start_time, datetime.now()
             )
-            
+
             self.progress_reporter.report_summary(final_result)
             logger.info(f"Scraping completed: {final_result.total_problems_saved} problems saved")
             return final_result
@@ -122,7 +120,7 @@ class ScrapeSubjectUseCase:
             error_msg = f"Critical error: {str(e)}"
             logger.error(error_msg, exc_info=True)
             self.progress_reporter.report_page_error(0, error_msg)
-            
+
             return ScrapingResult(
                 subject_name=subject_info.official_name,
                 success=False,

@@ -1,7 +1,6 @@
-import asyncio
+from typing import List
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
 import logging
 
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
@@ -34,10 +33,10 @@ class PageProcessor:
         base_run_folder: Path
     ) -> PageResult:
         start_time = datetime.now()
-        
+
         try:
             page_url = self._build_page_url(subject_info.base_url, page_num)
-            
+
             # Используем доменный сервис для скрапинга страницы
             scraping_result = await self._page_scraping_service.scrape_page(
                 url=page_url,
@@ -50,9 +49,9 @@ class PageProcessor:
 
             problems_list = scraping_result.problems
             assets_downloaded = scraping_result.assets_downloaded
-            
+
             logger.info(f"Page {page_num}: получено {len(problems_list)} проблем, ассетов: {assets_downloaded}")
-            
+
             if not problems_list:
                 return PageResult(
                     page_number=page_num,
@@ -64,12 +63,12 @@ class PageProcessor:
 
             # Сохраняем готовые Problem объекты
             saved_count = await self._save_problems(problems_list, page_num)
-            
+
             logger.info(f"Page {page_num}: сохранено {saved_count} проблем")
 
             # Вычисляем длительность выполнения страницы
             page_duration = (datetime.now() - start_time).total_seconds()
-            
+
             self._progress_reporter.report_page_progress(
                 page_num, 
                 None,  # total_pages

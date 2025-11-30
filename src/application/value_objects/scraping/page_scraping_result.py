@@ -1,13 +1,21 @@
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Optional
 from src.domain.models.problem import Problem
 
 
 @dataclass
 class PageScrapingResult:
-    problems: List[Problem]
-    assets_downloaded: int
+    """Value Object representing the result of scraping a single page."""
+    
+    page_url: str
+    success: bool
+    problems: List[Problem] = field(default_factory=list)
+    error_message: Optional[str] = None
+    assets_downloaded: int = 0
 
-    def __init__(self, problems: List[Problem] = None, assets_downloaded: int = 0):
-        self.problems = problems or []
-        self.assets_downloaded = assets_downloaded
+    def __post_init__(self):
+        """Validate the scraping result."""
+        if not self.page_url:
+            raise ValueError("Page URL cannot be empty")
+        if self.success and not self.problems:
+            raise ValueError("Successful scraping must have at least one problem")

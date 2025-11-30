@@ -1,15 +1,17 @@
+from typing import Optional
 """
 Value Object representing configuration parameters for the scraping process.
 
 Updated to integrate with centralized configuration system.
 """
 from dataclasses import dataclass
-from typing import Optional, Any, Dict, List, Tuple
 from enum import Enum
+
 
 class ScrapingMode(Enum):
     SEQUENTIAL = "sequential"
     PARALLEL = "parallel"
+
 
 @dataclass(frozen=True)
 class ScrapingConfig:
@@ -27,7 +29,7 @@ class ScrapingConfig:
     timeout_seconds: int = 30  # Timeout for browser operations
     retry_attempts: int = 3  # Number of retry attempts for failed requests
     retry_delay_seconds: int = 1  # Delay between retries
-    user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" # Default user agent
+    user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"  # Default user agent
 
     def __post_init__(self):
         """Validate the configuration after initialization."""
@@ -48,12 +50,12 @@ class ScrapingConfig:
     def from_central_config(cls) -> 'ScrapingConfig':
         """
         Create ScrapingConfig from centralized configuration.
-        
+
         Supports graceful degradation if central config is not available.
         """
         try:
             from src.core.config import config, ScrapingMode as CoreScrapingMode
-            
+
             # Handle both proper AppConfig and fallback config
             if hasattr(config, 'get_scraping_config_dict'):
                 # Proper configuration loaded
@@ -72,9 +74,9 @@ class ScrapingConfig:
                     "retry_delay_seconds": getattr(config.scraping, 'retry_delay_seconds', 1),
                     "user_agent": getattr(config.browser, 'user_agent', "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"),
                 }
-            
+
             return cls(**config_dict)
-            
+
         except ImportError as e:
             # Central config not available, fall back to defaults
             import logging

@@ -1,3 +1,4 @@
+from typing import List, Tuple
 """
 Application interface for parsing HTML blocks on a FIPI page.
 
@@ -6,8 +7,8 @@ and extracting pairs of header_container and qblock elements that belong togethe
 It allows the application layer to remain independent of the specific parsing implementation.
 """
 from abc import ABC, abstractmethod
-from typing import List, Tuple
-from bs4 import BeautifulSoup, Tag
+from bs4 import Tag
+
 
 class IHTMLBlockParser(ABC):
     """
@@ -26,4 +27,3 @@ class IHTMLBlockParser(ABC):
             A list of tuples, where each tuple contains a header_container Tag
             and its corresponding qblock Tag.
         """
-        pass

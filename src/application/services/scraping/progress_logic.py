@@ -1,21 +1,22 @@
+from typing import List, Optional
 """
 Functional core for scraping progress logic.
 
 This module contains pure functions that determine scraping progress based on
 existing problems and configuration, without any external dependencies or side effects.
 """
-from typing import List, Optional, Any, Dict, Tuple
 from src.domain.models.problem import Problem
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
+
 
 def extract_page_number_from_url(url: str) -> Optional[int]:
     """
     Extract page number from FIPI URL.
-    
+
     FIPI URLs use 0-based page numbering in query parameters like:
     https://ege.fipi.ru/...&page=0 (page 1)
     https://ege.fipi.ru/...&page=1 (page 2)
-    
+
     Returns 1-based page number or None if not found.
     """
     # Use centralized configuration for base URL detection
@@ -27,14 +28,14 @@ def extract_page_number_from_url(url: str) -> Optional[int]:
         # Fallback to hardcoded values if config is not available
         base_url = 'https://fipi.ru'
         browser_base_url = 'https://ege.fipi.ru'
-    
+
     if not url or ("&page=" not in url and "page=" not in url):
         return None
-    
+
     # Check both base URLs
     if not (url.startswith(base_url) or url.startswith(browser_base_url)):
         return None
-    
+
     try:
         # Try different URL parameter patterns
         if "&page=" in url:
@@ -43,11 +44,12 @@ def extract_page_number_from_url(url: str) -> Optional[int]:
             page_param = url.split("?page=")[1].split("&")[0]
         else:
             return None
-            
+
         page_num = int(page_param)
         return page_num + 1  # Convert 0-based to 1-based
     except (ValueError, IndexError):
         return None
+
 
 def _get_highest_scraped_page(existing_problems: List[Problem]) -> Optional[int]:
     """
@@ -72,14 +74,14 @@ def determine_next_page(
 ) -> int:
     """
     Determine the next page to scrape based on existing problems and configuration.
-    
+
     Returns:
         Page number to start scraping from (1-based)
     """
     # 1. СТРАТЕГИЯ: Принудительный перезапуск
     if config.force_restart:
         return 1
-    
+
     # 2. СТРАТЕГИЯ: Явно заданная страница начала
     if config.start_page is not None and config.start_page != "init":
         try:
@@ -94,15 +96,15 @@ def determine_next_page(
 
     # 4. СТРАТЕГИЯ: Продолжение скрейпинга (основной поток)
     highest_scraped_page = _get_highest_scraped_page(existing_problems)
-    
+
     if highest_scraped_page is not None:
         next_page = highest_scraped_page + 1
-        
+
         # Учет известной максимальной страницы
         if highest_known_page is not None and highest_scraped_page >= highest_known_page:
             return highest_known_page 
-            
+
         return next_page
-    
+
     # 5. СТРАТЕГИЯ: Не удалось найти страницы (нет source_url или ошибка парсинга)
-    return 1 # Fallback, если не смогли найти номер страницы ни в одной проблеме
+    return 1  # Fallback, если не смогли найти номер страницы ни в одной проблеме

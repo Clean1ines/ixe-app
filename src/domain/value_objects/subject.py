@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict, Optional
 
 # Пример маппинга, можно хранить в отдельном файле или загружать из конфига
 SUBJECT_MAPPING = {
@@ -23,6 +22,7 @@ SUBJECT_MAPPING = {
     },
     # ... другие предметы
 }
+
 
 @dataclass(frozen=True)
 class Subject:
@@ -59,10 +59,10 @@ class Subject:
         data = SUBJECT_MAPPING[alias]
         return cls(
             alias=alias,
-            official_name=data["official_name"],
-            subject_key=data["subject_key"],
-            proj_id=data["proj_id"],
-            exam_year=data["exam_year"]
+            official_name=str(data["official_name"]),
+            subject_key=str(data["subject_key"]),
+            proj_id=str(data["proj_id"]),
+            exam_year=int(str(data["exam_year"]))  # Явное преобразование в int
         )
 
     def __str__(self):

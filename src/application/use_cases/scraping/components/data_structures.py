@@ -1,10 +1,5 @@
-from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
-
-from src.domain.value_objects.scraping.subject_info import SubjectInfo
-from src.application.value_objects.scraping.scraping_config import ScrapingConfig
+from dataclasses import dataclass
 
 
 @dataclass

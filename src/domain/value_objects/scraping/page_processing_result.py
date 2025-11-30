@@ -1,6 +1,7 @@
+from typing import Optional
 """Domain value object for page processing results"""
 from dataclasses import dataclass
-from typing import Dict, Any, Optional
+
 
 @dataclass(frozen=True)
 class PageProcessingResult:

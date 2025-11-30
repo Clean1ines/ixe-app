@@ -1,11 +1,11 @@
-import asyncio
+from typing import Any, Dict
 import re
-from typing import Dict, Any
 from bs4 import BeautifulSoup
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 from src.domain.interfaces.html_processing.i_raw_block_processor import IRawBlockProcessor
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
+
 
 class ImageScriptProcessor(IRawBlockProcessor):
     def __init__(self, asset_downloader: IAssetDownloader):
@@ -19,7 +19,6 @@ class ImageScriptProcessor(IRawBlockProcessor):
 
     async def process(self, raw_data: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         body_html = raw_data.get("body_html", "") or ""
-        base_url = context.get("base_url", "")
         run_folder: Path = Path(context.get("run_folder_page", Path(".")))
         files_prefix = context.get("files_location_prefix", "")
 

@@ -1,6 +1,5 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
@@ -42,22 +41,22 @@ class ScrapingOrchestrator:
         try:
             start_page = await self._progress_service.get_next_page_to_scrape(subject_info, config)
             base_run_folder = Path("data") / subject_info.alias
-            
+
             page_processor = PageProcessor(
                 self._page_scraping_service,
                 self._problem_repository,
                 self._problem_factory,
                 self._progress_reporter
             )
-            
+
             loop_result = await ScrapingLoopController().run_loop(
                 start_page, subject_info, config, base_run_folder, page_processor
             )
-            
+
             final_result = ResultComposer().compose_final_result(
                 subject_info, loop_result, start_time, datetime.now()
             )
-            
+
             self._progress_reporter.report_summary(final_result)
             return final_result
 

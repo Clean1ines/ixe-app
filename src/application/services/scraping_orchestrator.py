@@ -1,3 +1,4 @@
+from typing import Any, Dict, List
 """
 Application service for orchestrating parallel scraping of multiple subjects.
 This service takes a list of subjects and their configurations,
@@ -6,13 +7,13 @@ and executes the ScrapeSubjectUseCase for each one concurrently.
 import asyncio
 import logging
 from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
 from src.domain.value_objects.scraping.scraping_result import ScrapingResult
 
 logger = logging.getLogger(__name__)
+
 
 class ScrapingOrchestrator:
     """
@@ -24,6 +25,7 @@ class ScrapingOrchestrator:
     - Handles errors gracefully at the subject level
     - Provides overall progress and summary
     """
+
     def __init__(self, scrape_use_case: ScrapeSubjectUseCase):
         """
         Initialize the orchestrator with the use case it will execute.
@@ -34,7 +36,7 @@ class ScrapingOrchestrator:
 
     async def run_parallel_scraping(
         self,
-        subject_configs: List[Dict[str, Any]] # List of dicts like {"subject_alias": "...", "config": ScrapingConfig}
+        subject_configs: List[Dict[str, Any]]  # List of dicts like {"subject_alias": "...", "config": ScrapingConfig}
     ) -> Dict[str, ScrapingResult]:
         """
         Run scraping for multiple subjects in parallel.
@@ -47,7 +49,7 @@ class ScrapingOrchestrator:
             A dictionary mapping subject aliases to their individual ScrapingResult.
         """
         logger.info(f"Starting parallel scraping for {len(subject_configs)} subjects.")
-        
+
         # Prepare tasks for asyncio.gather
         tasks = []
         for item in subject_configs:
@@ -68,19 +70,19 @@ class ScrapingOrchestrator:
         for i, item in enumerate(subject_configs):
             subject_alias = item["subject_alias"]
             result_or_exception = results[i]
-            
+
             if isinstance(result_or_exception, Exception):
                 logger.error(f"Scraping failed for subject '{subject_alias}' with exception: {result_or_exception}", exc_info=True)
                 # Create an error result using the correct ScrapingResult constructor
                 final_results[subject_alias] = ScrapingResult(
-                    subject_name=subject_alias, # Use alias or a placeholder
+                    subject_name=subject_alias,  # Use alias or a placeholder
                     success=False,
                     total_pages=0,
                     total_problems_found=0,
                     total_problems_saved=0,
                     page_results=[],
                     errors=[str(result_or_exception)],
-                    start_time=datetime.now(), # Use current time
+                    start_time=datetime.now(),  # Use current time
                     end_time=datetime.now()  # Use current time
                 )
             else:

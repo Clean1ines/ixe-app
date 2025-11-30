@@ -1,10 +1,11 @@
+from typing import List
 import logging
 import re
-from typing import List
 from bs4 import BeautifulSoup, Tag
 from src.application.services.html_parsing.i_html_block_parser import IHTMLBlockParser
 
 logger = logging.getLogger(__name__)
+
 
 class FIPIPageBlockParser(IHTMLBlockParser):
     def parse_blocks(self, page_content: str) -> List[List[Tag]]:

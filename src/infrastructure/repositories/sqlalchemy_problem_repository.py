@@ -1,3 +1,8 @@
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.dialects.sqlite import JSON  # For List[str] fields
+from sqlalchemy import String, Integer, DateTime, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from typing import List, Optional
 """
 Implementation of IProblemRepository using SQLAlchemy.
 
@@ -6,7 +11,6 @@ Problem entities using a SQL database via SQLAlchemy.
 """
 import logging
 from datetime import datetime
-from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete  # Add delete import
 from src.domain.models.problem import Problem
@@ -16,13 +20,11 @@ logger = logging.getLogger(__name__)
 
 # --- SQLAlchemy ORM Model (DBProblem) ---
 # This maps the Problem entity to a database table structure.
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Integer, DateTime, func
-from sqlalchemy.dialects.sqlite import JSON  # For List[str] fields
+
 
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy ORM models in this module."""
-    pass
+
 
 class DBProblem(Base):
     """
@@ -37,13 +39,13 @@ class DBProblem(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     # Core fields matching Problem entity
-    problem_id: Mapped[str] = mapped_column(String, unique=True, nullable=False) # Maps to Problem.problem_id
+    problem_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)  # Maps to Problem.problem_id
     subject_name: Mapped[str] = mapped_column(String, nullable=False)            # Maps to Problem.subject_name
     text: Mapped[str] = mapped_column(String, nullable=False)                    # Maps to Problem.text
     source_url: Mapped[str] = mapped_column(String, nullable=False)              # Maps to Problem.source_url
 
     # Optional/Computed fields
-    difficulty_level: Mapped[Optional[str]] = mapped_column(String, nullable=True) # Maps to Problem.difficulty_level
+    difficulty_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Maps to Problem.difficulty_level
     task_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)     # Maps to Problem.task_number
     exam_part: Mapped[Optional[str]] = mapped_column(String, nullable=True)        # Maps to Problem.exam_part
 
@@ -61,7 +63,7 @@ class DBProblem(Base):
     fipi_proj_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)     # Maps to Problem.fipi_proj_id
 
     # Metadata
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now()) # Maps to Problem.created_at
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())  # Maps to Problem.created_at
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)            # Maps to Problem.updated_at
 
     def __repr__(self) -> str:
@@ -79,7 +81,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
     using an AsyncSession.
     """
 
-    def __init__(self, session_factory: 'async_sessionmaker[AsyncSession]'): # Use string annotation for forward reference
+    def __init__(self, session_factory: 'async_sessionmaker[AsyncSession]'):  # Use string annotation for forward reference
         """
         Initialize the repository with a session factory.
 
@@ -89,7 +91,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
         """
         self._session_factory = session_factory
 
-    async def save(self, problem: Problem, force_update: bool = False) -> None: # Add force_update parameter
+    async def save(self, problem: Problem, force_update: bool = False) -> None:  # Add force_update parameter
         """
         Save a Problem entity to the database.
 
@@ -110,7 +112,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
                 # To truly respect 'not forced', we might not want to update anything here.
                 # The current implementation skips *any* update/save if it exists and not forced.
                 return
-            
+
             # Convert Problem entity to DBProblem ORM model attributes
             db_problem_attrs = {
                 "problem_id": problem.problem_id,
@@ -128,7 +130,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
                 "kos_codes": problem.kos_codes,
                 "form_id": problem.form_id,
                 "fipi_proj_id": problem.fipi_proj_id,
-                "updated_at": datetime.now() # Always update the timestamp
+                "updated_at": datetime.now()  # Always update the timestamp
             }
 
             if existing_db_problem:
@@ -145,19 +147,19 @@ class SQLAlchemyProblemRepository(IProblemRepository):
             else:
                 # Create new record
                 # Add created_at for new records
-                db_problem_attrs["created_at"] = problem.created_at # Use the one from domain entity
+                db_problem_attrs["created_at"] = problem.created_at  # Use the one from domain entity
                 new_db_problem = DBProblem(**db_problem_attrs)
                 session.add(new_db_problem)
                 logger.debug(f"Inserted new problem to database: {problem.problem_id}.")
 
             await session.commit()
             logger.debug(f"Saved problem to database: {problem.problem_id} (force_update={force_update})")
-            
+
     async def clear_subject_problems(self, subject_name: str) -> None:
         """
         Clear all problems for a specific subject.
         This is used when force_restart=True to completely refresh the subject data.
-        
+
         Args:
             subject_name: The name of the subject to clear
         """
@@ -177,7 +179,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
         Returns:
             The Problem entity if found, otherwise None.
         """
-        async with self._session_factory() as session: # Use the passed session_factory
+        async with self._session_factory() as session:  # Use the passed session_factory
             result = await session.execute(select(DBProblem).where(DBProblem.problem_id == problem_id))
             db_problem = result.scalar_one_or_none()
             if db_problem:
@@ -195,7 +197,7 @@ class SQLAlchemyProblemRepository(IProblemRepository):
         Returns:
             A list of Problem entities for the given subject name.
         """
-        async with self._session_factory() as session: # Use the passed session_factory
+        async with self._session_factory() as session:  # Use the passed session_factory
             result = await session.execute(select(DBProblem).where(DBProblem.subject_name == subject_name))
             db_problems = result.scalars().all()
             # Convert list of DBProblem ORM models back to list of Problem entities

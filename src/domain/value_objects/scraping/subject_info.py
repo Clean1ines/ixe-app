@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 import re
 from urllib.parse import quote
 
@@ -41,11 +40,14 @@ SUBJECT_TO_PROJ_ID_MAP = {
     "chi": "F6298F3470D898D043E18BC680F60434",
 }
 
+
 def _get_proj_id_by_alias(alias: str) -> str:
     return SUBJECT_TO_PROJ_ID_MAP.get(alias, "UNKNOWN_PROJ_ID")
 
+
 def _get_alias_by_official_name(official_name: str) -> str:
     return SUBJECT_ALIAS_MAP.get(official_name, "unknown")
+
 
 @dataclass(frozen=True)
 class SubjectInfo:
@@ -71,7 +73,7 @@ class SubjectInfo:
             raise ValueError(f"Unknown subject alias: {alias}")
         proj_id = _get_proj_id_by_alias(alias)
         if proj_id == "UNKNOWN_PROJ_ID":
-             raise ValueError(f"No proj_id found for alias: {alias}")
+            raise ValueError(f"No proj_id found for alias: {alias}")
         return cls(alias=alias, official_name=official_name, proj_id=proj_id)
 
     @classmethod
@@ -81,7 +83,7 @@ class SubjectInfo:
             raise ValueError(f"Unknown official subject name: {official_name}")
         proj_id = _get_proj_id_by_alias(alias)
         if proj_id == "UNKNOWN_PROJ_ID":
-             raise ValueError(f"No proj_id found for official name: {official_name}")
+            raise ValueError(f"No proj_id found for official name: {official_name}")
         return cls(alias=alias, official_name=official_name, proj_id=proj_id)
 
     @property

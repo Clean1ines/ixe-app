@@ -1,7 +1,8 @@
+from typing import Any, Dict, List
 """Domain representation of scraping results - used by domain services"""
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Dict, Any
+
 
 @dataclass
 class DomainScrapingResult:
@@ -13,11 +14,11 @@ class DomainScrapingResult:
     errors: List[str]
     start_time: datetime
     end_time: datetime
-    
+
     @property
     def duration_seconds(self) -> float:
         return (self.end_time - self.start_time).total_seconds()
-    
+
     @property 
     def success_rate(self) -> float:
         if self.total_pages == 0:

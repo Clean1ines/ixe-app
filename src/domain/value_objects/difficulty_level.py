@@ -1,8 +1,7 @@
+from typing import Optional
 from dataclasses import dataclass
-from enum import Enum
-from typing import Optional, Any, Dict, List, Tuple
 from .difficulty_level_enum import DifficultyLevelEnum  # Импортируем enum
-from typing import Optional, List, Tuple, Dict, Any
+
 
 @dataclass(frozen=True)
 class DifficultyLevel:

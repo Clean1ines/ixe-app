@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Optional, Tuple
 """
 Application service for page scraping operations.
 
@@ -5,7 +6,6 @@ Refactored to use dedicated components for each responsibility.
 """
 import logging
 from pathlib import Path
-from typing import List, Optional, Any, Dict, Tuple 
 
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
@@ -60,7 +60,7 @@ class PageScrapingService:
         """Get base URL from parameter or config with fallback."""
         if base_url is not None:
             return base_url
-        
+
         try:
             from src.core.config import config
             return getattr(config.scraping, 'base_url', 'https://fipi.ru')
@@ -93,7 +93,7 @@ class PageScrapingService:
     ) -> List[Any]:
         """Process all blocks and return problems."""
         problems = []
-        
+
         for i, block_elements in enumerate(grouped_blocks):
             try:
                 problem = await self.html_block_processing_service.process_block(
@@ -106,7 +106,7 @@ class PageScrapingService:
             except Exception as e_block:
                 logger.error(f"Error processing grouped block {i} on page {url}: {e_block}", exc_info=True)
                 continue
-                
+
         return problems
 
     def _count_assets(self, run_folder_page: Path) -> int:
@@ -134,7 +134,7 @@ class PageScrapingService:
         actual_base_url = self._get_base_url(base_url)
         actual_timeout = timeout or self.timeout
         actual_run_folder = run_folder_page or Path(".")
-        
+
         assets_count = 0
 
         logger.info(f"Scraping page: {url} for subject: {subject_info.official_name}")
@@ -142,7 +142,7 @@ class PageScrapingService:
         try:
             # 1. Fetch page content using ContentFetcher
             page_content, source_url = await self.content_fetcher.fetch_page_content(url, actual_timeout)
-            
+
             # 2. Handle iframe content using IframeHandler
             page = await self.content_fetcher.get_page()
             page_content, source_url = await self.iframe_handler.handle_iframe_content(
@@ -157,7 +157,7 @@ class PageScrapingService:
             context = self._create_processing_context(
                 subject_info, url, actual_run_folder, files_location_prefix, actual_base_url
             )
-            
+
             problems = await self._process_blocks(grouped_blocks, context, url)
 
             # 5. Count assets (Filesystem counting restores functional reporting)

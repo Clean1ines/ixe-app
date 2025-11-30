@@ -1,7 +1,7 @@
+from typing import Optional, Tuple
 """IframeHandler implementation for page scraping"""
 import logging
 import urllib.parse
-from typing import Tuple, Optional
 from bs4 import BeautifulSoup
 
 from src.domain.interfaces.scraping.i_iframe_handler import IIframeHandler
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class IframeHandler(IIframeHandler):
     """Handles iframe content extraction and processing"""
-    
+
     async def handle_iframe_content(
         self, 
         page: any, 
@@ -21,13 +21,13 @@ class IframeHandler(IIframeHandler):
     ) -> Tuple[str, str]:
         """
         Handle iframe content extraction with fallback
-        
+
         Args:
             page: Browser page instance
             url: Original URL
             timeout: Timeout in seconds  
             main_content: Main page content
-            
+
         Returns:
             Tuple of (actual_content, source_url)
         """
@@ -48,7 +48,7 @@ class IframeHandler(IIframeHandler):
 
         full_iframe_url = urllib.parse.urljoin(url, iframe_src)
         actual_source_url = full_iframe_url
-        
+
         try:
             await page.goto(full_iframe_url, wait_until="networkidle", timeout=timeout * 1000)
             actual_page_content = await page.content()
@@ -66,10 +66,10 @@ class IframeHandler(IIframeHandler):
     def find_questions_iframe(self, soup: BeautifulSoup) -> Optional[any]:
         """
         Find questions iframe in HTML content
-        
+
         Args:
             soup: BeautifulSoup object
-            
+
         Returns:
             Iframe element if found, None otherwise
         """

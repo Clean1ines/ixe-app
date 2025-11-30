@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Optional
 """
 Application service for processing HTML blocks using IRawBlockProcessor architecture.
 
@@ -8,14 +9,13 @@ This service coordinates:
 """
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, List
 
 from src.domain.interfaces.html_processing.i_raw_block_processor import IRawBlockProcessor
 from src.domain.models.problem import Problem
-from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.infrastructure.adapters.html_processing.metadata_extractor_adapter import MetadataExtractorAdapter
 
 logger = logging.getLogger(__name__)
+
 
 class HTMLBlockProcessingService:
     """
@@ -29,7 +29,7 @@ class HTMLBlockProcessingService:
     ):
         """
         Initialize with metadata extractor and raw data processors.
-        
+
         Args:
             metadata_extractor: Adapter for extracting raw data from HTML blocks
             raw_processors: List of processors that work on raw data dicts
@@ -57,12 +57,12 @@ class HTMLBlockProcessingService:
         try:
             # Import here to avoid circular imports
             from src.application.services.html_parsing.element_identifier import ElementIdentifier
-            
+
             # 1. Identify core elements from block_elements
             header_container, qblock = ElementIdentifier.identify_core_elements(
                 block_elements, block_index
             )
-            
+
             if not header_container or not qblock:
                 logger.warning(f"Could not identify core elements for block {block_index}")
                 return None
@@ -97,16 +97,16 @@ class HTMLBlockProcessingService:
     ) -> Dict[str, Any]:
         """
         Apply chain of IRawBlockProcessor to raw data.
-        
+
         Args:
             raw_data: Initial raw data from metadata extractor
             context: Processing context
-            
+
         Returns:
             Processed raw data
         """
         processed_data = raw_data
-        
+
         for processor in self.raw_processors:
             try:
                 logger.debug(f"Applying raw processor {processor.__class__.__name__}")
@@ -115,7 +115,7 @@ class HTMLBlockProcessingService:
                 logger.error(f"Error applying processor {processor.__class__.__name__}: {e}")
                 # Continue with next processor
                 continue
-                
+
         return processed_data
 
     def _create_problem_from_raw_data(self, raw_data: Dict[str, Any]) -> Problem:

@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Adapter that adapts the existing PageScrapingService implementation to the domain interface.
 
@@ -6,7 +7,6 @@ allowing us to use the existing scraping logic while adhering to the new archite
 """
 import logging
 from pathlib import Path
-from typing import Optional, List, Any
 
 from src.domain.interfaces.services.i_page_scraping_service import IPageScrapingService
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class PageScrapingAdapter(IPageScrapingService):
     """
     Adapter that makes the existing PageScrapingService compatible with the domain interface.
-    
+
     This adapter handles the translation between the existing implementation's return type
     and the domain's PageScrapingResult value object.
     """
@@ -38,7 +38,7 @@ class PageScrapingAdapter(IPageScrapingService):
     ) -> PageScrapingResult:
         """
         Adapt the existing PageScrapingService to return PageScrapingResult.
-        
+
         The existing service now returns a tuple (problems, assets_count).
         """
         try:
@@ -51,20 +51,20 @@ class PageScrapingAdapter(IPageScrapingService):
                 run_folder_page=run_folder_page,
                 files_location_prefix=files_location_prefix
             )
-            
+
             # Распаковываем кортеж (List[Any], int)
             # PageScrapingService ГАРАНТИРОВАННО возвращает кортеж из двух, даже при ошибке.
             problems_list, assets_downloaded = result_tuple
-            
+
             problems_list = list(problems_list) if problems_list else []
-            
+
             logger.debug(f"Adapter: {len(problems_list)} problems, {assets_downloaded} assets (FS count)")
-            
+
             return PageScrapingResult(
                 problems=problems_list,
                 assets_downloaded=assets_downloaded
             )
-            
+
         except Exception as e:
             logger.error(f"Error in page scraping adapter for {url}: {e}", exc_info=True)
             return PageScrapingResult(problems=[], assets_downloaded=0)

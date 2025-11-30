@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Infrastructure adapter to make IAssetDownloader compatible with the old processor interface.
 
@@ -6,13 +7,13 @@ signature expected by the legacy HTML processors from ~/iXe.
 """
 import logging
 from pathlib import Path
-from typing import Optional, Any, Dict, List, Tuple
 from urllib.parse import urlparse
 import os
 import hashlib
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
 
 logger = logging.getLogger(__name__)
+
 
 class AssetDownloaderAdapter:
     """
@@ -55,19 +56,19 @@ class AssetDownloaderAdapter:
             # If no filename in path, generate one based on URL hash and type
             # Use SHA256 instead of MD5 for security
             hash_suffix = hashlib.sha256(asset_url.encode()).hexdigest()[:16]
-            extension_map = {'image': '.jpg', 'file': '.dat', 'pdf': '.pdf', 'zip': '.zip'} # Basic mapping
+            extension_map = {'image': '.jpg', 'file': '.dat', 'pdf': '.pdf', 'zip': '.zip'}  # Basic mapping
             ext = extension_map.get(asset_type, '.dat')
             filename = f"{asset_type}_{hash_suffix}{ext}"
 
         full_path = save_dir / filename
-        save_dir.mkdir(parents=True, exist_ok=True) # Ensure parent directory exists
+        save_dir.mkdir(parents=True, exist_ok=True)  # Ensure parent directory exists
 
         try:
             # Use the new IAssetDownloader implementation's download method
             # Assuming the impl has async def download(url: str, destination: Path) -> bool
             success = await self._impl.download(asset_url, full_path)
             if success:
-                return full_path # Return the local path
+                return full_path  # Return the local path
             else:
                 logger.warning(f"Failed to download asset from {asset_url} using adapter.")
                 return None

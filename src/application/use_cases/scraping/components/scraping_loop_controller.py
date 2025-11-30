@@ -31,11 +31,11 @@ class ScrapingLoopController:
         # Исправляем условие: учитываем, что config.max_pages может быть None
         while (empty_pages_count < self._max_empty_pages and 
                (config.max_pages is None or current_page <= config.max_pages)):
-            
+
             page_result = await page_processor.process_page(
                 current_page, subject_info, config, base_run_folder
             )
-            
+
             page_results.append(page_result)
             total_problems_found += page_result.problems_found
             total_problems_saved += page_result.problems_saved

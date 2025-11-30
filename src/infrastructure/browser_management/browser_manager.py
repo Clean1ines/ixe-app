@@ -6,9 +6,10 @@ This allows one browser instance to handle multiple requests concurrently.
 Updated to use centralized configuration for timeouts and browser settings.
 """
 import logging
-from playwright.async_api import async_playwright, Page, Browser
+from playwright.async_api import async_playwright, Browser
 
 logger = logging.getLogger(__name__)
+
 
 class BrowserManager:
     """
@@ -129,7 +130,7 @@ class BrowserManager:
         try:
             logger.debug(f"BrowserManager creating new page for {url} with timeout {timeout}s")
             page = await self._browser.new_page()
-            
+
             # Set viewport and user agent from centralized configuration
             await page.set_viewport_size({
                 "width": self.default_viewport_width,
@@ -138,7 +139,7 @@ class BrowserManager:
             await page.set_extra_http_headers({
                 "User-Agent": self.default_user_agent
             })
-            
+
             page.set_default_timeout(timeout * 1000)  # Convert timeout to milliseconds
 
             logger.debug(f"BrowserManager navigating page to {url}")

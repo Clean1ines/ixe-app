@@ -1,3 +1,4 @@
+from typing import Any, Dict, Optional
 """
 Centralized configuration management system with environment support.
 
@@ -12,7 +13,6 @@ Features:
 import os
 import logging
 from enum import Enum
-from typing import Optional, Dict, Any
 from pydantic import BaseSettings, validator, Field
 from dotenv import load_dotenv
 
@@ -21,16 +21,19 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+
 class Environment(str, Enum):
     """Supported environments."""
     DEV = "dev"
     STAGING = "staging" 
     PROD = "prod"
 
+
 class ScrapingMode(str, Enum):
     """Scraping operation modes."""
     SEQUENTIAL = "sequential"
     PARALLEL = "parallel"
+
 
 class DatabaseConfig(BaseSettings):
     """Database configuration."""
@@ -49,6 +52,7 @@ class DatabaseConfig(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
 
 class BrowserConfig(BaseSettings):
     """Browser configuration."""
@@ -79,6 +83,7 @@ class BrowserConfig(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
 
 class ScrapingConfig(BaseSettings):
     """Scraping process configuration."""
@@ -117,13 +122,14 @@ class ScrapingConfig(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
 
+
 class AppConfig(BaseSettings):
     """Main application configuration."""
     environment: Environment = Field(default=Environment.DEV, env="ENVIRONMENT")
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
     assets_directory: str = Field(default="./assets", env="ASSETS_DIRECTORY")
     max_concurrent_downloads: int = Field(default=5, env="MAX_CONCURRENT_DOWNLOADS")
-    
+
     # Graceful degradation defaults
     enable_graceful_degradation: bool = Field(default=True, env="ENABLE_GRACEFUL_DEGRADATION")
     default_timeout: int = Field(default=30, env="DEFAULT_TIMEOUT")
@@ -146,7 +152,7 @@ class AppConfig(BaseSettings):
     def validate_config(self):
         """Validate entire configuration after initialization."""
         errors = []
-        
+
         # Environment-specific validations
         if self.environment == Environment.PROD:
             if not self.scraping.base_url.startswith("https://"):
@@ -155,7 +161,7 @@ class AppConfig(BaseSettings):
                 errors.append("Production environment requires HTTPS for browser")
             if self.browser.headless is False:
                 errors.append("Production environment should run browser in headless mode")
-        
+
         # Directory validations
         if self.assets_directory:
             try:
@@ -186,6 +192,7 @@ class AppConfig(BaseSettings):
             "user_agent": self.browser.user_agent,
         }
 
+
 # Global configuration instance with graceful degradation
 try:
     config = AppConfig()
@@ -193,7 +200,7 @@ try:
 except Exception as e:
     logger.warning(f"Configuration loading failed: {e}")
     logger.info("Falling back to default configuration with graceful degradation...")
-    
+
     # Graceful degradation - create minimal config with safe defaults
     class FallbackConfig:
         environment = Environment.DEV
@@ -225,5 +232,5 @@ except Exception as e:
             'pool_size': 20,
             'max_overflow': 30
         })()
-    
+
     config = FallbackConfig()

@@ -1,6 +1,6 @@
+from typing import Tuple
 import asyncio
 from pathlib import Path
-from typing import Tuple
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
@@ -15,12 +15,7 @@ from src.infrastructure.adapters.external_services.playwright_asset_downloader_a
 from src.infrastructure.adapters.browser_pool_service_adapter import BrowserPoolServiceAdapter
 from src.infrastructure.repositories.sqlalchemy_problem_repository import SQLAlchemyProblemRepository, Base
 from src.infrastructure.processors.html.image_script_processor import ImageScriptProcessor
-# УДАЛЕНО: from src.infrastructure.processors.html.file_link_processor import FileLinkProcessor (старая версия)
-# УДАЛЕНО: импорт фабрики
-
-# НОВЫЙ ИМПОРТ: Теперь FileLinkProcessor берется из переименованного файла, который содержит рефакторенный код (CC=A)
 from src.infrastructure.processors.html.file_link_processor import FileLinkProcessor 
-
 from src.infrastructure.processors.html.task_info_processor import TaskInfoProcessor
 from src.infrastructure.processors.html.input_field_remover import InputFieldRemover
 from src.infrastructure.processors.html.mathml_remover import MathMLRemover
@@ -42,15 +37,18 @@ try:
 except ImportError:
     CENTRAL_CONFIG_AVAILABLE = False
     # Create a simple fallback config
+
     class FallbackConfig:
         database = type('Database', (), {'url': 'sqlite:///./ege_problems.db'})()
         browser = type('Browser', (), {'timeout_seconds': 30})()
         scraping = type('Scraping', (), {'asset_download_timeout': 60})()
     config = FallbackConfig()
 
+
 async def create_tables(engine):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
 
 def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseCase, IBrowserService, IAssetDownloader]:
     # Use centralized configuration for timeouts with graceful degradation
@@ -94,6 +92,7 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
 
     # Create tables in a separate thread to avoid the nested event loop issue
     import threading
+
     def run_create_tables():
         asyncio.run(create_tables(engine))
 
@@ -104,6 +103,7 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
 
     problem_repository: IProblemRepository = SQLAlchemyProblemRepository(session_factory)
 
+    # FIX: Use simple ProblemFactory without validation service dependency
     problem_factory: IProblemFactory = ProblemFactory()
 
     html_block_parser: IHTMLBlockParser = FIPIPageBlockParser()
@@ -112,10 +112,10 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
 
     # NEW: Inject asset_downloader_impl into ImageScriptProcessor
     image_processor = ImageScriptProcessor(asset_downloader=asset_downloader_impl)
-    
+
     # ИСПРАВЛЕНО: Прямое использование FileLinkProcessor (рефакторенный код)
     file_processor = FileLinkProcessor() 
-    
+
     task_info_processor = TaskInfoProcessor()
     input_field_remover = InputFieldRemover()
     mathml_remover = MathMLRemover()

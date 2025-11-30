@@ -1,3 +1,4 @@
+from typing import Optional
 """
 Infrastructure adapter implementing IAssetDownloader using Playwright's APIRequestContext.
 
@@ -6,13 +7,11 @@ from the web using Playwright's request API, which is independent of a specific 
 It fulfills the contract defined by IAssetDownloader.
 """
 import logging
-import asyncio
 from pathlib import Path
-from typing import Optional, Any, Dict, List, Tuple
-import re
 from playwright.async_api import async_playwright, APIRequestContext, Error as PlaywrightError
 
 logger = logging.getLogger(__name__)
+
 
 class PlaywrightAssetDownloaderAdapter:
     """
@@ -33,9 +32,9 @@ class PlaywrightAssetDownloaderAdapter:
         self.timeout_ms = timeout * 1000
         self._request_context: APIRequestContext | None = None
         self._playwright_ctx = None
-        self._browser = None # Store the browser instance
+        self._browser = None  # Store the browser instance
         self._initialized = False
-        self.timeout = timeout # FIX: Add the timeout attribute
+        self.timeout = timeout  # FIX: Add the timeout attribute
 
     async def initialize(self):
         """Initialize the Playwright context and API request context."""
@@ -58,18 +57,18 @@ class PlaywrightAssetDownloaderAdapter:
         logger.info("Closing PlaywrightAssetDownloaderAdapter.")
         if self._request_context:
             try:
-                await self._request_context.dispose() # Dispose the request context
+                await self._request_context.dispose()  # Dispose the request context
             except Exception as e:
                 logger.error(f"Error disposing API request context: {e}")
             self._request_context = None
 
         # FIX: Access self._browser which is now correctly stored as an attribute
         if self._browser:
-             try:
-                 await self._browser.close()
-             except Exception as e:
-                 logger.error(f"Error closing browser used for request context: {e}")
-             self._browser = None
+            try:
+                await self._browser.close()
+            except Exception as e:
+                logger.error(f"Error closing browser used for request context: {e}")
+            self._browser = None
 
         if self._playwright_ctx:
             try:
@@ -100,7 +99,7 @@ class PlaywrightAssetDownloaderAdapter:
             response = await self._request_context.get(asset_url, timeout=self.timeout_ms)
             if response.ok:
                 content = await response.body()
-                destination_path.parent.mkdir(parents=True, exist_ok=True) # Ensure parent directory exists
+                destination_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure parent directory exists
                 with open(destination_path, 'wb') as f:
                     f.write(content)
                 logger.debug(f"Successfully downloaded asset to {destination_path}")
@@ -165,7 +164,7 @@ class PlaywrightAssetDownloaderAdapter:
             import aiohttp
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response: # Используем self.timeout
+                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:  # Используем self.timeout
                     if response.status == 200:
                         destination_path.parent.mkdir(parents=True, exist_ok=True)
                         content = await response.read()
@@ -189,7 +188,7 @@ class PlaywrightAssetDownloaderAdapter:
             import aiohttp
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response: # Используем self.timeout
+                async with session.get(asset_url, timeout=aiohttp.ClientTimeout(total=self.timeout)) as response:  # Используем self.timeout
                     if response.status == 200:
                         content = await response.read()
                         logger.debug(f"Successfully downloaded bytes using aiohttp: {asset_url}")

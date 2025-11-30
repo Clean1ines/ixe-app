@@ -1,5 +1,6 @@
+from typing import Any, Dict
 import abc
-from typing import Dict, Any
+
 
 class IRawBlockProcessor(abc.ABC):
     """

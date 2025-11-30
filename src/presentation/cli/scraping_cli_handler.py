@@ -7,23 +7,21 @@ via the main function, adhering to DIP.
 import asyncio
 import logging
 import argparse
-import urllib.parse # ИМПОРТИРУЕМ urllib.parse В НАЧАЛЕ ФАЙЛА
 from pathlib import Path
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
-from src.domain.interfaces.external_services.i_browser_service import IBrowserService
-from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
 from src.dependency_injection.composition_root import create_scraping_components
-from src.application.services.scraping.progress_reporter import ScrapingProgressReporter
 
 logger = logging.getLogger(__name__)
+
 
 class ScrapingCLIHandler:
     """
     CLI handler for scraping operations.
     Depends only on the ScrapeSubjectUseCase abstraction.
     """
+
     def __init__(self, scrape_use_case: ScrapeSubjectUseCase):
         """
         Initialize the CLI handler with the use case it will execute.
@@ -49,7 +47,7 @@ class ScrapingCLIHandler:
             # Get subject info based on alias
             try:
                 subject_info = SubjectInfo.from_alias(subject_alias)
-            except ValueError as e:
+            except ValueError:
                 logger.error(f"Unknown subject alias: {subject_alias}")
                 print(f"Error: Unknown subject alias: {subject_alias}")
                 return
@@ -75,14 +73,14 @@ class ScrapingCLIHandler:
 
             # Final result reporting is handled by the progress reporter in the use case
             if not result.success:
-                print(f"Scraping completed with errors. Check logs for details.")
+                print("Scraping completed with errors. Check logs for details.")
             else:
-                print(f"Scraping completed successfully!")
+                print("Scraping completed successfully!")
 
         except Exception as e:
             logger.error(f"CLI Handler: Error during scraping for '{subject_alias}': {e}", exc_info=True)
             print(f"Error during scraping: {e}")
-            raise # Re-raise to be handled by main for cleanup
+            raise  # Re-raise to be handled by main for cleanup
 
 
 def main():
@@ -106,7 +104,7 @@ def main():
     print(f"End page: {args.end_page}")
     print(f"Force restart: {args.force_restart}")
     print(f"Run folder: {args.run_folder}")
-    
+
     # Create components
     scrape_use_case, browser_service, asset_downloader_impl = create_scraping_components(base_run_folder=args.run_folder)
 
@@ -141,6 +139,7 @@ def main():
 
     # Run the async function with cleanup
     asyncio.run(run_with_cleanup())
+
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,7 @@
-from typing import Dict, Any
+from typing import Any, Dict
 from bs4 import BeautifulSoup
 from src.domain.interfaces.html_processing.i_raw_block_processor import IRawBlockProcessor
+
 
 class InputFieldRemover(IRawBlockProcessor):
     async def process(self, raw_data: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:

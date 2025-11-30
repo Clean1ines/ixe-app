@@ -1,3 +1,4 @@
+from typing import List, Optional
 """
 Domain interface for Problem repository operations.
 
@@ -6,7 +7,6 @@ allowing the domain layer to remain independent of the specific infrastructure
 implementation (e.g., SQL, NoSQL, file-based).
 """
 from abc import abstractmethod
-from typing import Optional, List
 from src.domain.models.problem import Problem
 
 

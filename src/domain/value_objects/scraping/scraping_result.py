@@ -1,11 +1,12 @@
+from typing import Any, Dict, List, Optional
 """
 Value Object representing the result of a scraping operation.
 """
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 
-@dataclass # Убираем frozen=True
+
+@dataclass  # Убираем frozen=True
 class ScrapingResult:
     """
     Value Object for scraping process results and statistics.

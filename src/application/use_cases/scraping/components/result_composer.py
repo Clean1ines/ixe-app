@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Dict, Any
 
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.value_objects.scraping.scraping_result import ScrapingResult

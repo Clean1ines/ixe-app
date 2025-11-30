@@ -1,3 +1,4 @@
+from typing import Any, Dict, List
 """
 Domain interface for task classification operations.
 This interface defines the contract for classifying a task based on extracted
@@ -5,12 +6,11 @@ codes and other attributes, allowing the domain layer to remain independent of
 the specific classification logic implementation.
 """
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
 
 
 class ITaskClassifier(ABC):
     """Domain interface for task classification operations."""
-    
+
     @abstractmethod
     def classify_task(
         self, 
@@ -30,4 +30,3 @@ class ITaskClassifier(ABC):
             A dictionary containing the classification result 
             (e.g., task_number, difficulty_level, exam_part).
         """
-        pass

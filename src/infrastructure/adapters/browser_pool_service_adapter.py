@@ -1,3 +1,4 @@
+from typing import Deque
 """
 Infrastructure adapter implementing IBrowserService using a pool of BrowserManager instances.
 
@@ -6,12 +7,12 @@ fulfilling the IBrowserService contract required by the domain layer.
 """
 import asyncio
 import logging
-from typing import Any, Deque
 from collections import deque
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.infrastructure.browser_management.browser_manager import BrowserManager
 
 logger = logging.getLogger(__name__)
+
 
 class BrowserPoolServiceAdapter(IBrowserService):
     """
@@ -30,7 +31,7 @@ class BrowserPoolServiceAdapter(IBrowserService):
         self.pool_size = pool_size
         self.base_url = base_url
         self._pool: asyncio.Queue[BrowserManager] = asyncio.Queue()
-        self._all_managers: Deque[BrowserManager] = deque() # Keep references for closing
+        self._all_managers: Deque[BrowserManager] = deque()  # Keep references for closing
         self._initialized = False
 
     async def initialize(self):
@@ -41,7 +42,7 @@ class BrowserPoolServiceAdapter(IBrowserService):
         logger.info(f"Initializing BrowserPoolServiceAdapter with pool size {self.pool_size}.")
         for i in range(self.pool_size):
             manager = BrowserManager(base_url=self.base_url)
-            await manager.initialize() # Initialize each manager
+            await manager.initialize()  # Initialize each manager
             await self._pool.put(manager)
             self._all_managers.append(manager)
 
@@ -61,7 +62,7 @@ class BrowserPoolServiceAdapter(IBrowserService):
             await self.initialize()
 
         logger.debug("Waiting for available browser from pool.")
-        manager = await self._pool.get() # This waits if queue is empty
+        manager = await self._pool.get()  # This waits if queue is empty
         logger.debug(f"BrowserManager retrieved from pool. Pool size now: {self._pool.qsize()}")
         return manager
 
@@ -77,7 +78,7 @@ class BrowserPoolServiceAdapter(IBrowserService):
             return
 
         logger.debug(f"Releasing BrowserManager back to pool. Pool size before: {self._pool.qsize()}")
-        await self._pool.put(browser_manager) # Put it back in the queue
+        await self._pool.put(browser_manager)  # Put it back in the queue
         logger.debug(f"BrowserManager released to pool. Pool size now: {self._pool.qsize()}")
 
     async def close(self):
@@ -121,5 +122,4 @@ class BrowserPoolServiceAdapter(IBrowserService):
             content = await manager.get_page_content(url, timeout)
             return content
         finally:
-            await self.release_browser(manager) # Ensure browser is returned to pool even if an error occurs
-
+            await self.release_browser(manager)  # Ensure browser is returned to pool even if an error occurs
