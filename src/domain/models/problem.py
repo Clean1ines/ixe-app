@@ -105,6 +105,14 @@ class Problem:
         """Check if the problem has associated images."""
         return len(self.images) > 0
 
+    def get_total_assets_count(self) -> int:
+
+        """Calculate the total number of images and files associated with the problem."""
+
+        return len(self.images) + len(self.files)
+
+
+
     def has_files(self) -> bool:
         """Check if the problem has associated files."""
         return len(self.files) > 0

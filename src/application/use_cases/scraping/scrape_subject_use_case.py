@@ -1,40 +1,69 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Optional
 from datetime import datetime
-from src.application.services.page_scraping_service import PageScrapingService
+
+from src.domain.interfaces.services.i_page_scraping_service import IPageScrapingService
 from src.domain.interfaces.repositories.i_problem_repository import IProblemRepository
 from src.application.interfaces.factories.i_problem_factory import IProblemFactory
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
+from src.domain.interfaces.scraping.i_progress_service import IProgressService
+from src.domain.interfaces.scraping.i_progress_reporter import IProgressReporter
+
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
-from src.application.value_objects.scraping.scraping_result import ScrapingResult
+from src.domain.value_objects.scraping.scraping_result import ScrapingResult
 from src.domain.models.problem import Problem
+
+from src.application.use_cases.scraping.components import PageProcessor, ScrapingLoopController, ResultComposer
 
 logger = logging.getLogger(__name__)
 
-class _NoopProgressService:
-    async def get_next_page_to_scrape(self, subject_info, config):
-        return 1
 
-class _NoopProgressReporter:
-    def report_start(self, *a, **k): pass
-    def report_page_progress(self, *a, **k): pass
-    def report_page_error(self, *a, **k): pass
-    def report_summary(self, *a, **k): pass
+class _NoopProgressService(IProgressService):
+    async def get_next_page_to_scrape(
+        self, 
+        subject_info: SubjectInfo, 
+        start_page: str,
+        force_restart: bool
+    ) -> int:
+        return int(start_page) if start_page != "init" else 1
+
+
+class _NoopProgressReporter(IProgressReporter):
+    def report_start(
+        self, 
+        subject_info: SubjectInfo, 
+        start_page: str,
+        max_pages: Optional[int],
+        force_restart: bool
+    ) -> None:
+        pass
+    
+    def report_page_progress(self, page: int, total_pages: Optional[int], 
+                           problems_found: int, problems_saved: int, 
+                           assets_downloaded: int, duration_seconds: float) -> None:
+        pass
+        
+    def report_page_error(self, page: int, error: str) -> None:
+        pass
+        
+    def report_summary(self, result: ScrapingResult) -> None:
+        pass
+
 
 class ScrapeSubjectUseCase:
     def __init__(
         self,
-        page_scraping_service: PageScrapingService,
+        page_scraping_service: IPageScrapingService,
         problem_repository: IProblemRepository,
         problem_factory: IProblemFactory,
         browser_service: IBrowserService,
         asset_downloader_impl: IAssetDownloader,
-        progress_service: Optional[Any] = None,
-        progress_reporter: Optional[Any] = None
+        progress_service: Optional[IProgressService] = None,
+        progress_reporter: Optional[IProgressReporter] = None
     ):
         self.page_scraping_service = page_scraping_service
         self.problem_repository = problem_repository
@@ -46,88 +75,54 @@ class ScrapeSubjectUseCase:
 
     async def execute(self, subject_info: SubjectInfo, config: ScrapingConfig) -> ScrapingResult:
         start_time = datetime.now()
-        self.progress_reporter.report_start(subject_info, config)
-        logger.info(f"Starting scraping for subject: {subject_info.official_name} with config: {config}")
+        
+        # Разворачиваем параметры конфига в примитивы для вызова Domain Interface
+        self.progress_reporter.report_start(
+            subject_info, 
+            config.start_page, 
+            config.max_pages, 
+            config.force_restart
+        )
+        
+        logger.info(f"Starting scraping for subject: {subject_info.official_name}")
 
         if config.force_restart:
-            logger.info(f"Force restart enabled for {subject_info.official_name}. Clearing existing problems...")
-            if hasattr(self.problem_repository, "clear_subject_problems"):
-                try:
-                    clear_method = getattr(self.problem_repository, "clear_subject_problems")
-                    if asyncio.iscoroutinefunction(clear_method):
-                        await clear_method(subject_info.official_name)
-                    else:
-                        clear_method(subject_info.official_name)
-                except Exception as e:
-                    logger.error(f"Failed to clear existing problems: {e}", exc_info=True)
+            await self._clear_existing_problems(subject_info)
 
         try:
-            start_page_num = await self.progress_service.get_next_page_to_scrape(subject_info, config)
+            # Передаем примитивы в ProgressService
+            start_page = await self.progress_service.get_next_page_to_scrape(
+                subject_info, 
+                config.start_page, 
+                config.force_restart
+            )
             
             base_run_folder = Path("data") / subject_info.alias
-            base_run_folder.mkdir(parents=True, exist_ok=True)
-
-            total_scraped_problems = 0
-            total_found = 0
-            all_page_results = []
-            errors = []
-
-            current_page = start_page_num
-            has_more_pages = True
-            empty_pages_count = 0
-
-            while has_more_pages and empty_pages_count < 3:
-                if config.max_pages and current_page >= start_page_num + config.max_pages:
-                    break
-
-                page_result = await self._process_single_page(
-                    current_page=current_page,
-                    subject_info=subject_info,
-                    base_run_folder=base_run_folder,
-                    config=config
-                )
-                
-                problems_found = page_result.get("problems_found", 0)
-                total_found += problems_found
-                total_scraped_problems += page_result.get("problems_saved", 0)
-                all_page_results.append(page_result)
-                
-                if problems_found == 0:
-                    empty_pages_count += 1
-                else:
-                    empty_pages_count = 0
-                
-                if page_result.get("error"):
-                    errors.append(page_result["error"])
-                    has_more_pages = False
-                elif problems_found == 0:
-                    has_more_pages = False
-                else:
-                    current_page += 1
-
-            duration = datetime.now() - start_time
-            success = total_scraped_problems > 0
-
-            result = ScrapingResult(
-                subject_name=subject_info.official_name,
-                success=success,
-                total_pages=len(all_page_results),
-                total_problems_found=total_found,
-                total_problems_saved=total_scraped_problems,
-                page_results=all_page_results,
-                errors=errors,
-                start_time=start_time,
-                end_time=datetime.now()
+            
+            # Компоненты Application Layer продолжают получать полный config
+            page_processor = PageProcessor(
+                self.page_scraping_service,
+                self.problem_repository,
+                self.progress_reporter
             )
-
-            self.progress_reporter.report_summary(result)
-            logger.info(f"Completed scraping for subject {subject_info.official_name}. Total problems saved: {total_scraped_problems}. Duration: {duration.total_seconds():.2f}s")
-            return result
+            
+            loop_result = await ScrapingLoopController().run_loop(
+                start_page, subject_info, config, base_run_folder, page_processor
+            )
+            
+            final_result = ResultComposer().compose_final_result(
+                subject_info, loop_result, start_time, datetime.now()
+            )
+            
+            self.progress_reporter.report_summary(final_result)
+            logger.info(f"Scraping completed: {final_result.total_problems_saved} problems saved")
+            return final_result
 
         except Exception as e:
-            duration = datetime.now() - start_time
-            logger.error(f"Critical error during scraping for subject {subject_info.official_name}: {e}", exc_info=True)
-            self.progress_reporter.report_page_error(0, f"Critical error: {str(e)}")
+            error_msg = f"Critical error: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            self.progress_reporter.report_page_error(0, error_msg)
+            
             return ScrapingResult(
                 subject_name=subject_info.official_name,
                 success=False,
@@ -135,82 +130,14 @@ class ScrapeSubjectUseCase:
                 total_problems_found=0,
                 total_problems_saved=0,
                 page_results=[],
-                errors=[str(e)],
+                errors=[error_msg],
                 start_time=start_time,
                 end_time=datetime.now()
             )
 
-    async def _process_single_page(
-        self,
-        current_page: int,
-        subject_info: SubjectInfo,
-        base_run_folder: Path,
-        config: ScrapingConfig
-    ) -> Dict[str, any]:
-        page_start_time = datetime.now()
-        page_result = {
-            "page_number": current_page,
-            "problems_found": 0,
-            "problems_saved": 0,
-            "assets_downloaded": 0,
-            "page_duration_seconds": 0.0,
-            "error": None
-        }
-
-        try:
-            page_run_folder = base_run_folder / f"page_{current_page}"
-            page_run_folder.mkdir(parents=True, exist_ok=True)
-            page_assets_dir = page_run_folder / "assets"
-            page_assets_dir.mkdir(parents=True, exist_ok=True)
-
-            # Исправляем base_url для правильного формирования URL изображений
-            base_url = "https://ege.fipi.ru/bank/"
-            page_url = f"https://ege.fipi.ru/bank/questions.php?proj={subject_info.proj_id}&page={current_page-1}&pagesize=10"
-
-            problems = await self.page_scraping_service.scrape_page(
-                url=page_url,
-                subject_info=subject_info,
-                base_url=base_url,
-                timeout=config.timeout_seconds,
-                run_folder_page=page_run_folder,
-                files_location_prefix="assets/"
-            )
-
-            assets_count = sum(1 for _ in page_assets_dir.iterdir() if _.is_file()) if page_assets_dir.exists() else 0
-            saved_count = await self._save_problems(problems, config.force_restart)
-
-            page_duration = datetime.now() - page_start_time
-
-            page_result.update({
-                "problems_found": len(problems),
-                "problems_saved": saved_count,
-                "assets_downloaded": assets_count,
-                "page_duration_seconds": page_duration.total_seconds()
-            })
-
-            self.progress_reporter.report_page_progress(
-                page_num=current_page,
-                total_pages=0,
-                problems_found=len(problems),
-                problems_saved=saved_count,
-                assets_downloaded=assets_count,
-                duration_seconds=page_duration.total_seconds()
-            )
-
-        except Exception as e:
-            error_msg = f"Error processing page {current_page}: {str(e)}"
-            logger.error(error_msg, exc_info=True)
-            page_result["error"] = error_msg
-            self.progress_reporter.report_page_error(current_page, str(e))
-
-        return page_result
-
-    async def _save_problems(self, problems: List[Problem], force_restart: bool) -> int:
-        saved_count = 0
-        for problem in problems:
-            try:
-                await self.problem_repository.save(problem, force_update=force_restart)
-                saved_count += 1
-            except Exception as e:
-                logger.error(f"Failed to save problem {getattr(problem, 'problem_id', '<unknown>')}: {e}", exc_info=True)
-        return saved_count
+    async def _clear_existing_problems(self, subject_info: SubjectInfo) -> None:
+        """Clear existing problems for the subject before scraping."""
+        logger.info(f"Clearing existing problems for subject: {subject_info.official_name}")
+        problems = await self.problem_repository.get_by_subject(subject_info.official_name)
+        # TODO: Реализовать фактическое удаление через репозиторий, если потребуется
+        logger.warning(f"Force restart requested. Found {len(problems)} existing problems (deletion not implemented).")

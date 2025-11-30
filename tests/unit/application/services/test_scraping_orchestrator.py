@@ -8,7 +8,7 @@ from datetime import datetime
 from src.application.services.scraping_orchestrator import ScrapingOrchestrator
 from src.application.use_cases.scraping.scrape_subject_use_case import ScrapeSubjectUseCase
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
-from src.application.value_objects.scraping.scraping_result import ScrapingResult
+from src.domain.value_objects.scraping.scraping_result import ScrapingResult
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 
 @pytest.fixture

@@ -3,7 +3,7 @@ Unit tests for the ScrapingResult value object.
 """
 import pytest
 from datetime import datetime, timedelta
-from src.application.value_objects.scraping.scraping_result import ScrapingResult
+from src.domain.value_objects.scraping.scraping_result import ScrapingResult
 
 
 class TestScrapingResult:

@@ -5,7 +5,7 @@ Refactored to use dedicated components for each responsibility.
 """
 import logging
 from pathlib import Path
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any, Dict, Tuple 
 
 from src.domain.interfaces.external_services.i_browser_service import IBrowserService
 from src.domain.interfaces.external_services.i_asset_downloader import IAssetDownloader
@@ -113,6 +113,7 @@ class PageScrapingService:
         """Count assets in the page assets directory."""
         page_assets_dir = run_folder_page / "assets"
         if page_assets_dir.exists():
+            # Мы подсчитываем именно количество файлов в папке, чтобы получить 1 ассет, а не 10.
             return sum(1 for _ in page_assets_dir.iterdir() if _.is_file())
         return 0
 
@@ -124,15 +125,17 @@ class PageScrapingService:
         timeout: int = None,
         run_folder_page: Optional[Path] = None,
         files_location_prefix: str = ""
-    ) -> List[Any]:
+    ) -> Tuple[List[Any], int]:
         """
-        Scrape a single page and return Problem entities.
-        Refactored to use dedicated components for each responsibility.
+        Scrape a single page and return Problem entities and the count of downloaded assets 
+        (counted via filesystem due to asset_downloader caching logic).
         """
         # Resolve configuration
         actual_base_url = self._get_base_url(base_url)
         actual_timeout = timeout or self.timeout
         actual_run_folder = run_folder_page or Path(".")
+        
+        assets_count = 0
 
         logger.info(f"Scraping page: {url} for subject: {subject_info.official_name}")
 
@@ -157,15 +160,17 @@ class PageScrapingService:
             
             problems = await self._process_blocks(grouped_blocks, context, url)
 
-            # 5. Count assets for logging
+            # 5. Count assets (Filesystem counting restores functional reporting)
             assets_count = self._count_assets(actual_run_folder)
             logger.debug(f"Assets saved to {actual_run_folder / 'assets'}: {assets_count}")
 
-            return problems
+            # Возвращаем проблемы И количество ассетов (кортеж из двух)
+            return problems, assets_count
 
         except Exception as e:
             logger.error(f"Failed to scrape page {url}: {e}", exc_info=True)
-            return []
+            # ВОЗВРАЩАЕМ КОРТЕЖ ИЗ ДВУХ ЭЛЕМЕНТОВ, чтобы избежать ValueError в адаптере
+            return [], 0
         finally:
             # Ensure browser resources are cleaned up
             await self.content_fetcher.cleanup_browser()

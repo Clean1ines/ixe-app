@@ -26,6 +26,10 @@ from src.application.services.html_parsing.i_html_block_parser import IHTMLBlock
 from src.application.services.html_parsing.fipa_page_block_parser import FIPIPageBlockParser
 from src.infrastructure.adapters.html_processing.metadata_extractor_adapter import MetadataExtractorAdapter
 
+# Импорты новой архитектуры
+from src.domain.interfaces.services.i_page_scraping_service import IPageScrapingService
+from src.infrastructure.services.page_scraping_adapter import PageScrapingAdapter
+
 # Import centralized configuration
 try:
     from src.core.config import config
@@ -125,7 +129,7 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
     progress_reporter = ScrapingProgressReporter()
 
     # Use centralized configuration for page scraping service timeout
-    page_scraping_service = PageScrapingService(
+    page_scraping_service_impl = PageScrapingService(
         browser_service=browser_service,
         asset_downloader_impl=asset_downloader_impl,
         problem_factory=problem_factory,
@@ -134,8 +138,11 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
         timeout=browser_timeout
     )
 
+    # NEW: Wrap the existing implementation with the domain adapter
+    page_scraping_service: IPageScrapingService = PageScrapingAdapter(page_scraping_service_impl)
+
     scrape_use_case = ScrapeSubjectUseCase(
-        page_scraping_service=page_scraping_service,
+        page_scraping_service=page_scraping_service,  # Use the domain interface
         problem_repository=problem_repository,
         problem_factory=problem_factory,
         browser_service=browser_service,

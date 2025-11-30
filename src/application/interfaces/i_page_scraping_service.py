@@ -10,9 +10,10 @@ operation (scraping a page and returning domain entities) rather than a core dom
 """
 import abc
 from pathlib import Path
-from typing import List, Optional, Any, Dict, Tuple
+from typing import Optional
 from src.domain.models.problem import Problem
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
+from src.application.value_objects.scraping.page_scraping_result import PageScrapingResult
 
 
 class IPageScrapingService(abc.ABC):
@@ -30,9 +31,9 @@ class IPageScrapingService(abc.ABC):
         timeout: int = 30,
         run_folder_page: Optional[Path] = None,
         files_location_prefix: str = ""
-    ) -> List[Problem]:
+    ) -> PageScrapingResult:
         """
-        Scrape a single page and return Problem entities.
+        Scrape a single page and return PageScrapingResult with Problem entities and assets count.
 
         Args:
             url: The URL of the page to scrape.
@@ -44,6 +45,6 @@ class IPageScrapingService(abc.ABC):
             files_location_prefix: Prefix for file paths in the output (used by processors via adapter).
 
         Returns:
-            A list of Problem entities extracted from the page.
+            A PageScrapingResult containing Problem entities and assets count.
         """
         pass

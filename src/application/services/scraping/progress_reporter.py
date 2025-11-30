@@ -5,17 +5,14 @@ This service is responsible for displaying progress information to the user
 without being tied to any specific output method (CLI, web UI, etc.).
 """
 import sys
-from typing import Optional, TextIO, Any, Dict, List, Tuple
-from datetime import timedelta
-from src.application.value_objects.scraping.scraping_result import ScrapingResult
+from typing import Optional, TextIO
+from src.domain.interfaces.scraping.i_progress_reporter import IProgressReporter
+from src.domain.value_objects.scraping.scraping_result import ScrapingResult
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 
-class ScrapingProgressReporter:
+class ScrapingProgressReporter(IProgressReporter):
     """
     Reporter for scraping progress that can be used with different output streams.
-    
-    This class has a single responsibility: formatting and displaying progress information.
-    It does not contain any business logic or interact with external services directly.
     """
     
     def __init__(self, output_stream: Optional[TextIO] = None):
@@ -27,20 +24,22 @@ class ScrapingProgressReporter:
         """
         self._output = output_stream or sys.stdout
     
-    def report_start(self, subject_info: SubjectInfo, config: 'ScrapingConfig') -> None:
+    def report_start(
+        self, 
+        subject_info: SubjectInfo, 
+        start_page: str,
+        max_pages: Optional[int],
+        force_restart: bool
+    ) -> None:
         """
         Report the start of scraping process.
-        
-        Args:
-            subject_info: Subject being scraped
-            config: Scraping configuration
         """
         print(f"Starting scraping for subject: {subject_info.official_name}", file=self._output)
-        print(f"Configuration: mode={config.mode.name}, force_restart={config.force_restart}", file=self._output)
-        if config.start_page:
-            print(f"Starting from page: {config.start_page}", file=self._output)
-        if config.max_pages:
-            print(f"Maximum pages: {config.max_pages}", file=self._output)
+        print(f"Configuration: force_restart={force_restart}", file=self._output)
+        if start_page and start_page != "init":
+            print(f"Starting from page: {start_page}", file=self._output)
+        if max_pages:
+            print(f"Maximum pages: {max_pages}", file=self._output)
         print("-" * 50, file=self._output)
     
     def report_page_progress(
@@ -54,14 +53,6 @@ class ScrapingProgressReporter:
     ) -> None:
         """
         Report progress for a single page.
-        
-        Args:
-            page_num: Current page number
-            total_pages: Total pages to process (if known)
-            problems_found: Number of problems found on the page
-            problems_saved: Number of problems successfully saved
-            assets_downloaded: Number of assets (images/files) downloaded
-            duration_seconds: Time taken to process the page
         """
         if total_pages:
             progress = f"Page {page_num}/{total_pages}"
@@ -77,19 +68,12 @@ class ScrapingProgressReporter:
     def report_page_error(self, page_num: int, error: str) -> None:
         """
         Report an error that occurred while processing a page.
-        
-        Args:
-            page_num: Page number where error occurred
-            error: Error message
         """
         print(f"ERROR on page {page_num}: {error}", file=self._output)
     
     def report_summary(self, result: ScrapingResult) -> None:
         """
         Report the final summary of the scraping process.
-        
-        Args:
-            result: Final scraping result containing statistics
         """
         print("\n" + "=" * 50, file=self._output)
         print(f"Scraping Summary for {result.subject_name}", file=self._output)
