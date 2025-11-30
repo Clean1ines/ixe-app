@@ -6,7 +6,7 @@ from src.application.value_objects.scraping.scraping_config import ScrapingConfi
 from src.domain.value_objects.scraping.scraping_result import ScrapingResult
 from src.domain.interfaces.repositories.i_problem_repository import IProblemRepository
 from src.application.interfaces.factories.i_problem_factory import IProblemFactory
-from src.application.interfaces.i_page_scraping_service import IPageScrapingService
+from src.domain.interfaces.services.i_page_scraping_service import IPageScrapingService
 from src.domain.interfaces.scraping.i_progress_service import IProgressService
 from src.domain.interfaces.scraping.i_progress_reporter import IProgressReporter
 

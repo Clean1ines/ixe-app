@@ -1,71 +1,39 @@
 /
 ├── .github/
 │   └── workflows/
-├── data/
-│   ├── math/
-│   │   └── page_1/
-│   │       └── assets/
-│   └── promath/
-│       ├── page_1/
-│       │   └── assets/
-│       │       ├── xs3qstsrc0EAF5F4054BCAB954FA570B08B75D1D0_1_1576247873.gif/
-│       │       ├── xs3qstsrc38145AE420079F9D4C19246517C7086D_1_1642161503.png/
-│       │       ├── xs3qstsrc69FC87BA2A03B8724426E1086DEBB45A_1_1676461317.png/
-│       │       ├── xs3qstsrc96A1CCD4FC1A9FED47689887747631F0_1_1638185246.png/
-│       │       ├── xs3qstsrcB3F8CC4C3D5CA7194B8FC7EA12D13DAB_1_1478531278.png/
-│       │       ├── xs3qstsrcDA5103E67E0BB354406C6ACF8BFC2E84_1_1478531281.png/
-│       │       └── xs3qstsrcE6EFE322D98AA0874F8B5E9642525DB5_1_1478534085.png/
-│       ├── page_2/
-│       │   └── assets/
-│       │       ├── xs3qstsrc164ebee2c79c41a989df535a795492eb_7_1759831280.png/
-│       │       ├── xs3qstsrc1845EC69297E96CD4D230DBE53F23AD0_1_1478531283.png/
-│       │       ├── xs3qstsrc19c88fef112749fb91a1496bfdf0d082_6_1758622307.png/
-│       │       ├── xs3qstsrc1B7468B8EEB4857941CAFF1419F5C529_1_1478534640.png/
-│       │       ├── xs3qstsrc31C6B63D6C22848746013402B1A72A54_1_1512575080.png/
-│       │       ├── xs3qstsrc5E6122FA349888304C37DFEB97C6E8BF_1_1642161518.png/
-│       │       └── xs3qstsrcD2295821B2339E5C48183A316A76652E_1_1710237026.png/
-│       ├── page_3/
-│       │   └── assets/
-│       │       ├── xs3qstsrc164ebee2c79c41a989df535a795492eb_7_1759831280.png/
-│       │       ├── xs3qstsrc31C6B63D6C22848746013402B1A72A54_1_1512575080.png/
-│       │       ├── xs3qstsrc5BE76882372DA34A4D57257A6E6CEC35_1_1512579787.png/
-│       │       └── xs3qstsrcC44796BC4D4DA31A4EB2E8D80CC04FD8_1_1676461172.png/
-│       ├── page_4/
-│       │   └── assets/
-│       │       ├── xs3qstsrc1845EC69297E96CD4D230DBE53F23AD0_1_1478531283.png/
-│       │       ├── xs3qstsrc19c88fef112749fb91a1496bfdf0d082_6_1758622307.png/
-│       │       ├── xs3qstsrc1B7468B8EEB4857941CAFF1419F5C529_1_1478534640.png/
-│       │       ├── xs3qstsrc5E6122FA349888304C37DFEB97C6E8BF_1_1642161518.png/
-│       │       └── xs3qstsrcD2295821B2339E5C48183A316A76652E_1_1710237026.png/
-│       └── page_5/
-│           └── assets/
-│               └── xs3qstsrcC44796BC4D4DA31A4EB2E8D80CC04FD8_1_1676461172.png/
+├── .mypy_cache/
+├── docs/
 ├── scripts/
+│   ├── analyze_imports.py (987.0 B)
+│   ├── check-compatibility.py (1.2 KB)
+│   │   module __main__: Check compatibility of our code with older package versions
+│   │   function check_imports: Check if all required imports work
+│   ├── convert_imports.py (2.4 KB)
+│   └── generate_requirements.py (1.7 KB)
 ├── src/
 │   ├── application/
 │   │   ├── factories/
 │   │   │   ├── __init__.py (0 B)
-│   │   │   └── problem_factory.py (1.6 KB)
-│   │   │       module __main__: Application factory for creating Problem entities from raw data.  This factory implements the IPr...
-│   │   │       class ProblemFactory: Factory for creating Problem entities from raw data.
-│   │   │       method ProblemFactory.create_problem: Create a Problem entity from raw scraped data.  Args:     raw_data: Dictionary containing raw dat...
-│   │   │       function create_problem: Create a Problem entity from raw scraped data.  Args:     raw_data: Dictionary containing raw dat...
+│   │   │   └── problem_factory.py (1.3 KB)
+│   │   │       class ProblemFactory: Factory for creating Problem entities.
+│   │   │       method ProblemFactory.create_problem: Create a new Problem instance from raw data.
+│   │   │       function create_problem: Create a new Problem instance from raw data.
 │   │   ├── interfaces/
 │   │   │   ├── factories/
 │   │   │   │   ├── __init__.py (0 B)
-│   │   │   │   └── i_problem_factory.py (810.0 B)
-│   │   │   │       module __main__: Application interface for Problem factory operations.  This interface defines the contract for cr...
-│   │   │   │       class IProblemFactory: Interface for creating Problem entities from raw data.
-│   │   │   │       method IProblemFactory.create_problem: Create a Problem entity from raw scraped data.  Args:     raw_data: Dictionary containing raw dat...
-│   │   │   │       function create_problem: Create a Problem entity from raw scraped data.  Args:     raw_data: Dictionary containing raw dat...
+│   │   │   │   └── i_problem_factory.py (508.0 B)
+│   │   │   │       class IProblemFactory: Interface for Problem factory components.
+│   │   │   │       method IProblemFactory.create_problem: Create a Problem instance from raw data.  Args:     raw_data: Dictionary containing problem data ...
+│   │   │   │       function create_problem: Create a Problem instance from raw data.  Args:     raw_data: Dictionary containing problem data ...
+│   │   │   ├── __init__.py (0 B)
 │   │   │   └── i_page_scraping_service.py (1.9 KB)
-│   │   │       module __main__: Application interface for Page Scraping Service operations.  This interface defines the contract ...
 │   │   │       class IPageScrapingService: Application interface for page scraping operations. Defines the operation of scraping a single pa...
-│   │   │       method IPageScrapingService.scrape_page: Scrape a single page and return Problem entities.  Args:     url: The URL of the page to scrape. ...
-│   │   │       function scrape_page: Scrape a single page and return Problem entities.  Args:     url: The URL of the page to scrape. ...
+│   │   │       method IPageScrapingService.scrape_page: Scrape a single page and return PageScrapingResult with Problem entities and assets count.  Args:...
+│   │   │       function scrape_page: Scrape a single page and return PageScrapingResult with Problem entities and assets count.  Args:...
 │   │   ├── services/
 │   │   │   ├── html_parsing/
-│   │   │   │   ├── element_identifier.py (3.3 KB)
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   ├── element_identifier.py (3.1 KB)
 │   │   │   │   │   class ElementIdentifier: Service for identifying core elements (qblock, header) from HTML block groups.  Business Rules: -...
 │   │   │   │   │   method ElementIdentifier.identify_core_elements: Identify header and qblock elements from a group of HTML elements.  Args:     block_elements: Lis...
 │   │   │   │   │   method ElementIdentifier._find_qblock: Pure function to identify qblock element.
@@ -74,39 +42,37 @@
 │   │   │   │   │   function _find_qblock: Pure function to identify qblock element.
 │   │   │   │   │   function _find_header_container: Pure function to identify header container.
 │   │   │   │   ├── fipa_page_block_parser.py (2.1 KB)
-│   │   │   │   └── i_html_block_parser.py (949.0 B)
-│   │   │   │       module __main__: Application interface for parsing HTML blocks on a FIPI page.  This interface defines the contrac...
+│   │   │   │   └── i_html_block_parser.py (922.0 B)
 │   │   │   │       class IHTMLBlockParser: Interface for parsing HTML blocks.
 │   │   │   │       method IHTMLBlockParser.parse_blocks: Parses the page content and returns a list of (header_container, qblock) pairs.  Args:     page_c...
 │   │   │   │       function parse_blocks: Parses the page content and returns a list of (header_container, qblock) pairs.  Args:     page_c...
 │   │   │   ├── scraping/
-│   │   │   │   ├── progress_logic.py (2.8 KB)
-│   │   │   │   │   module __main__: Functional core for scraping progress logic.  This module contains pure functions that determine ...
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   ├── progress_logic.py (4.2 KB)
 │   │   │   │   │   function extract_page_number_from_url: Extract page number from FIPI URL.  FIPI URLs use 0-based page numbering in query parameters like...
-│   │   │   │   │   function determine_next_page: Determine the next page to scrape based on existing problems and configuration.  This is a pure f...
-│   │   │   │   ├── progress_reporter.py (4.6 KB)
-│   │   │   │   │   module __main__: Service for reporting scraping progress to different outputs.  This service is responsible for di...
-│   │   │   │   │   class ScrapingProgressReporter: Reporter for scraping progress that can be used with different output streams.  This class has a ...
+│   │   │   │   │   function _get_highest_scraped_page: Чистая функция для извлечения максимального 1-based номера страницы из списка существующих проблем.
+│   │   │   │   │   function determine_next_page: Determine the next page to scrape based on existing problems and configuration.  Returns:     Pag...
+│   │   │   │   ├── progress_reporter.py (3.7 KB)
+│   │   │   │   │   class ScrapingProgressReporter: Reporter for scraping progress that can be used with different output streams.
 │   │   │   │   │   method ScrapingProgressReporter.__init__: Initialize the progress reporter.  Args:     output_stream: Output stream to write to (defaults t...
-│   │   │   │   │   method ScrapingProgressReporter.report_start: Report the start of scraping process.  Args:     subject_info: Subject being scraped     config: ...
-│   │   │   │   │   method ScrapingProgressReporter.report_page_progress: Report progress for a single page.  Args:     page_num: Current page number     total_pages: Tota...
-│   │   │   │   │   method ScrapingProgressReporter.report_page_error: Report an error that occurred while processing a page.  Args:     page_num: Page number where err...
-│   │   │   │   │   method ScrapingProgressReporter.report_summary: Report the final summary of the scraping process.  Args:     result: Final scraping result contai...
+│   │   │   │   │   method ScrapingProgressReporter.report_start: Report the start of scraping process.
+│   │   │   │   │   method ScrapingProgressReporter.report_page_progress: Report progress for a single page.
+│   │   │   │   │   method ScrapingProgressReporter.report_page_error: Report an error that occurred while processing a page.
+│   │   │   │   │   method ScrapingProgressReporter.report_summary: Report the final summary of the scraping process.
 │   │   │   │   │   function __init__: Initialize the progress reporter.  Args:     output_stream: Output stream to write to (defaults t...
-│   │   │   │   │   function report_start: Report the start of scraping process.  Args:     subject_info: Subject being scraped     config: ...
-│   │   │   │   │   function report_page_progress: Report progress for a single page.  Args:     page_num: Current page number     total_pages: Tota...
-│   │   │   │   │   function report_page_error: Report an error that occurred while processing a page.  Args:     page_num: Page number where err...
-│   │   │   │   │   function report_summary: Report the final summary of the scraping process.  Args:     result: Final scraping result contai...
-│   │   │   │   └── scraping_progress_service.py (2.4 KB)
+│   │   │   │   │   function report_start: Report the start of scraping process.
+│   │   │   │   │   function report_page_progress: Report progress for a single page.
+│   │   │   │   │   function report_page_error: Report an error that occurred while processing a page.
+│   │   │   │   │   function report_summary: Report the final summary of the scraping process.
+│   │   │   │   └── scraping_progress_service.py (2.0 KB)
 │   │   │   │       module __main__: Imperative shell for scraping progress logic.  This service handles the interaction with external...
-│   │   │   │       class ScrapingProgressService: Service responsible for determining scraping progress and next actions.  This is the imperative s...
+│   │   │   │       class ScrapingProgressService: Service responsible for determining scraping progress and next actions.
 │   │   │   │       method ScrapingProgressService.__init__: Initialize the progress service.  Args:     problem_repository: Repository to access existing pro...
-│   │   │   │       method ScrapingProgressService.get_next_page_to_scrape: Get the next page number to scrape for a subject.  This method handles all the imperative concern...
+│   │   │   │       method ScrapingProgressService.get_next_page_to_scrape: Get the next page number to scrape for a subject.
 │   │   │   │       function __init__: Initialize the progress service.  Args:     problem_repository: Repository to access existing pro...
-│   │   │   │       function get_next_page_to_scrape: Get the next page number to scrape for a subject.  This method handles all the imperative concern...
+│   │   │   │       function get_next_page_to_scrape: Get the next page number to scrape for a subject.
 │   │   │   ├── __init__.py (0 B)
-│   │   │   ├── html_block_processing_service.py (5.3 KB)
-│   │   │   │   module __main__: Application service for processing HTML blocks using IRawBlockProcessor architecture.  This servi...
+│   │   │   ├── html_block_processing_service.py (5.2 KB)
 │   │   │   │   class HTMLBlockProcessingService: Application service for processing HTML blocks in the new IRawBlockProcessor architecture.
 │   │   │   │   method HTMLBlockProcessingService.__init__: Initialize with metadata extractor and raw data processors.  Args:     metadata_extractor: Adapte...
 │   │   │   │   method HTMLBlockProcessingService.process_block: Process a block of HTML elements into a Problem entity using new architecture.  Args:     block_e...
@@ -116,12 +82,24 @@
 │   │   │   │   function process_block: Process a block of HTML elements into a Problem entity using new architecture.  Args:     block_e...
 │   │   │   │   function _apply_raw_processors: Apply chain of IRawBlockProcessor to raw data.  Args:     raw_data: Initial raw data from metadat...
 │   │   │   │   function _create_problem_from_raw_data: Create Problem entity from raw data.
-│   │   │   ├── page_scraping_service.py (6.8 KB)
-│   │   │   │   module __main__: Application service for page scraping operations.  Refactor notes: - Prefer injected html_block_p...
-│   │   │   │   method PageScrapingService.__init__: html_block_parser: optional. If provided, used to group DOM elements into blocks. If not provided...
-│   │   │   │   function __init__: html_block_parser: optional. If provided, used to group DOM elements into blocks. If not provided...
+│   │   │   ├── page_scraping_orchestrator.py (2.5 KB)
+│   │   │   │   class PageScrapingOrchestrator: Application service for orchestrating page scraping operations.  This service doesn't contain scr...
+│   │   │   │   method PageScrapingOrchestrator.scrape_page: Orchestrate page scraping with application-level concerns.  Args:     url: The URL of the page to...
+│   │   │   │   function scrape_page: Orchestrate page scraping with application-level concerns.  Args:     url: The URL of the page to...
+│   │   │   ├── page_scraping_service.py (7.0 KB)
+│   │   │   │   method PageScrapingService.__init__: Initialize with dependencies and setup components.
+│   │   │   │   method PageScrapingService._get_base_url: Get base URL from parameter or config with fallback.
+│   │   │   │   method PageScrapingService._create_processing_context: Create processing context for block processing.
+│   │   │   │   method PageScrapingService._process_blocks: Process all blocks and return problems.
+│   │   │   │   method PageScrapingService._count_assets: Count assets in the page assets directory.
+│   │   │   │   method PageScrapingService.scrape_page: Scrape a single page and return Problem entities and the count of downloaded assets  (counted via...
+│   │   │   │   function __init__: Initialize with dependencies and setup components.
+│   │   │   │   function _get_base_url: Get base URL from parameter or config with fallback.
+│   │   │   │   function _create_processing_context: Create processing context for block processing.
+│   │   │   │   function _process_blocks: Process all blocks and return problems.
+│   │   │   │   function _count_assets: Count assets in the page assets directory.
+│   │   │   │   function scrape_page: Scrape a single page and return Problem entities and the count of downloaded assets  (counted via...
 │   │   │   └── scraping_orchestrator.py (5.0 KB)
-│   │   │       module __main__: Application service for orchestrating parallel scraping of multiple subjects. This service takes ...
 │   │   │       class ScrapingOrchestrator: Application service for orchestrating parallel scraping of multiple subjects. Business Rules: - A...
 │   │   │       method ScrapingOrchestrator.__init__: Initialize the orchestrator with the use case it will execute. Args:     scrape_use_case: The use...
 │   │   │       method ScrapingOrchestrator.run_parallel_scraping: Run scraping for multiple subjects in parallel. Args:     subject_configs: A list of dictionaries...
@@ -131,36 +109,86 @@
 │   │   │       function _scrape_single_subject: Helper method to scrape a single subject and return its result. This is wrapped in a task by run_...
 │   │   ├── use_cases/
 │   │   │   ├── scraping/
-│   │   │   │   └── scrape_subject_use_case.py (9.0 KB)
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── __init__.py (364.0 B)
+│   │   │   │   │   │   module __main__: Components for scraping use cases.
+│   │   │   │   │   ├── data_structures.py (470.0 B)
+│   │   │   │   │   ├── page_processor.py (4.4 KB)
+│   │   │   │   │   ├── result_composer.py (1.5 KB)
+│   │   │   │   │   ├── scraping_loop_controller.py (2.2 KB)
+│   │   │   │   │   └── scraping_orchestrator.py (3.1 KB)
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   └── scrape_subject_use_case.py (5.7 KB)
+│   │   │   │       method ScrapeSubjectUseCase._clear_existing_problems: Clear existing problems for the subject before scraping.
+│   │   │   │       function _clear_existing_problems: Clear existing problems for the subject before scraping.
 │   │   │   └── __init__.py (0 B)
 │   │   ├── value_objects/
-│   │   │   └── scraping/
-│   │   │       ├── scraping_config.py (1.9 KB)
-│   │   │       │   module __main__: Value Object representing configuration parameters for the scraping process.
-│   │   │       │   class ScrapingConfig: Value Object for scraping process configuration.
-│   │   │       │   method ScrapingConfig.__post_init__: Validate the configuration after initialization.
-│   │   │       │   function __post_init__: Validate the configuration after initialization.
-│   │   │       ├── scraping_result.py (1.0 KB)
-│   │   │       │   module __main__: Value Object representing the result of a scraping operation.
-│   │   │       │   class ScrapingResult: Value Object for scraping process results and statistics.
-│   │   │       │   method ScrapingResult.duration_seconds: Get duration of scraping in seconds.
-│   │   │       │   method ScrapingResult.success_rate: Get success rate as percentage.
-│   │   │       │   function duration_seconds: Get duration of scraping in seconds.
-│   │   │       │   function success_rate: Get success rate as percentage.
-│   │   │       └── subject_info.py (4.2 KB)
+│   │   │   ├── scraping/
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   ├── page_scraping_result.py (695.0 B)
+│   │   │   │   │   class PageScrapingResult: Value Object representing the result of scraping a single page.
+│   │   │   │   │   method PageScrapingResult.__post_init__: Validate the scraping result.
+│   │   │   │   │   function __post_init__: Validate the scraping result.
+│   │   │   │   ├── scraping_config.py (4.1 KB)
+│   │   │   │   │   class ScrapingConfig: Value Object for scraping process configuration. Integrated with centralized configuration system.
+│   │   │   │   │   method ScrapingConfig.__post_init__: Validate the configuration after initialization.
+│   │   │   │   │   method ScrapingConfig.from_central_config: Create ScrapingConfig from centralized configuration.  Supports graceful degradation if central c...
+│   │   │   │   │   function __post_init__: Validate the configuration after initialization.
+│   │   │   │   │   function from_central_config: Create ScrapingConfig from centralized configuration.  Supports graceful degradation if central c...
+│   │   │   │   └── subject_info.py (4.2 KB)
+│   │   │   └── __init__.py (0 B)
 │   │   └── __init__.py (0 B)
+│   ├── core/
+│   │   ├── __init__.py (278.0 B)
+│   │   │   module __main__: Core module for centralized configuration management.
+│   │   ├── config.py (8.6 KB)
+│   │   │   class Environment: Supported environments.
+│   │   │   class ScrapingMode: Scraping operation modes.
+│   │   │   class DatabaseConfig: Database configuration.
+│   │   │   method DatabaseConfig.validate_database_url: Validate database URL.
+│   │   │   class BrowserConfig: Browser configuration.
+│   │   │   method BrowserConfig.validate_timeout: Validate browser timeout.
+│   │   │   method BrowserConfig.validate_base_url: Validate base URL.
+│   │   │   class ScrapingConfig: Scraping process configuration.
+│   │   │   method ScrapingConfig.validate_base_url: Validate scraping base URL.
+│   │   │   method ScrapingConfig.validate_positive_numbers: Validate positive integer fields.
+│   │   │   method ScrapingConfig.validate_non_negative: Validate non-negative fields.
+│   │   │   class AppConfig: Main application configuration.
+│   │   │   method AppConfig.__init__: Initialize configuration with validation.
+│   │   │   method AppConfig.validate_config: Validate entire configuration after initialization.
+│   │   │   method AppConfig.get_scraping_config_dict: Convert to dictionary compatible with existing ScrapingConfig.
+│   │   │   function validate_database_url: Validate database URL.
+│   │   │   function validate_timeout: Validate browser timeout.
+│   │   │   function validate_base_url: Validate base URL.
+│   │   │   function validate_base_url: Validate scraping base URL.
+│   │   │   function validate_positive_numbers: Validate positive integer fields.
+│   │   │   function validate_non_negative: Validate non-negative fields.
+│   │   │   function __init__: Initialize configuration with validation.
+│   │   │   function validate_config: Validate entire configuration after initialization.
+│   │   │   function get_scraping_config_dict: Convert to dictionary compatible with existing ScrapingConfig.
+│   │   └── startup.py (774.0 B)
+│   │       module __main__: Startup configuration validation module. Validates critical configuration on application startup.
+│   │       function validate_configuration_on_startup: Validate critical configuration settings on application startup.
 │   ├── dependency_injection/
-│   │   └── composition_root.py (4.5 KB)
+│   │   ├── __init__.py (0 B)
+│   │   └── composition_root.py (7.3 KB)
 │   ├── domain/
 │   │   ├── html_processing/
-│   │   │   └── pure_html_transforms.py (5.0 KB)
+│   │   │   ├── __init__.py (0 B)
+│   │   │   └── pure_html_transforms.py (10.4 KB)
 │   │   │       function extract_dom_tree: Преобразует HTML-строку в BeautifulSoup DOM. Чистая функция: deterministic, не делает I/O.
-│   │   │       function extract_block_pairs: Из DOM (или HTML-строки) извлекает упорядоченный список пар (header_html, body_html). Подход: ище...
+│   │   │       function extract_block_pairs: Из DOM (или HTML-строки) извлекает упорядоченный список пар (header_html, body_html).  Поддержива...
+│   │   │       function _extract_block_pairs_by_header_body_pattern: Старая логика: ищет элементы с классами 'problem-header' и 'problem-body'.
+│   │   │       function _find_header_elements: Находит элементы, которые могут быть заголовками задач.
+│   │   │       function _find_next_tag_sibling: Вспомогательная функция: находит ближайший следующий HTML-элемент (Tag), пропуская NavigableStrin...
+│   │   │       function _find_body_element_for_header: Находит элемент, который может быть телом задачи для заданного заголовка. Использует две последов...
+│   │   │       function _extract_block_pairs_by_qblocks_pattern_with_grouping: Новая логика: Обработка qblock-ов как на страницах ФИПИ с учетом группировки. Общий qblock без ID...
+│   │   │       function _group_qblocks_by_context: Группирует qblock-и по общему контексту.  Args:     qblocks: Список BeautifulSoup Tag объектов с ...
 │   │   │       function transform_blocks_to_raw_data: Преобразует пары (header_html, body_html) в список "сырых" dict-объектов, пригодных для feed в фа...
 │   │   ├── interfaces/
 │   │   │   ├── external_services/
+│   │   │   │   ├── __init__.py (0 B)
 │   │   │   │   ├── i_asset_downloader.py (1.5 KB)
-│   │   │   │   │   module __main__: Domain interface for asset downloading operations.  This interface defines the contract for downl...
 │   │   │   │   │   class IAssetDownloader: Domain interface for downloading assets from the web.
 │   │   │   │   │   method IAssetDownloader.initialize: Initialize the asset downloader resources.
 │   │   │   │   │   method IAssetDownloader.close: Close the asset downloader resources.
@@ -171,7 +199,6 @@
 │   │   │   │   │   function download: Download an asset from the web and save it to a local destination.  Args:     asset_url: The full...
 │   │   │   │   │   function download_bytes: Download an asset from the web and return its content as bytes.  Args:     asset_url: The full UR...
 │   │   │   │   └── i_browser_service.py (1.6 KB)
-│   │   │   │       module __main__: Domain interface for Browser service operations.  This interface defines the contract for interac...
 │   │   │   │       class IBrowserService: Interface for operations related to browser management and interaction.
 │   │   │   │       method IBrowserService.get_browser: Get a browser instance.  Returns:     A browser instance from the pool or a new one.     The conc...
 │   │   │   │       method IBrowserService.release_browser: Release a browser instance back to the pool.  Args:     browser: The browser instance to release.
@@ -182,23 +209,38 @@
 │   │   │   │       function close: Close all managed browser resources.
 │   │   │   │       function get_page_content: Navigate to a URL and get the page's HTML content.  Args:     url: The URL to navigate to.     ti...
 │   │   │   ├── html_processing/
-│   │   │   │   ├── i_html_processor.py (2.5 KB)
-│   │   │   │   │   module __main__: Domain interface for HTML processing operations.  This interface defines the contract for process...
-│   │   │   │   │   class IHTMLProcessor: Domain interface for processing a single HTML block pair (header_container, qblock).  This interf...
-│   │   │   │   │   method IHTMLProcessor.process_html_block: Process a single HTML block pair and return structured data.  Args:     header_container: The Bea...
-│   │   │   │   │   function process_html_block: Process a single HTML block pair and return structured data.  Args:     header_container: The Bea...
-│   │   │   │   ├── i_raw_block_processor.py (590.0 B)
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   ├── i_block_parser.py (1.1 KB)
+│   │   │   │   │   class IBlockParser: Coordinates HTML block parsing with multiple strategies
+│   │   │   │   │   method IBlockParser.parse_html_blocks: Parse HTML content into grouped blocks  Args:     html_content: HTML content to parse  Returns:  ...
+│   │   │   │   │   method IBlockParser.parse_with_primary_parser: Parse using primary parser strategy  Args:     html_content: HTML content to parse  Returns:     ...
+│   │   │   │   │   method IBlockParser.parse_with_fallback: Parse using fallback strategy  Args:     html_content: HTML content to parse  Returns:     List o...
+│   │   │   │   │   function parse_html_blocks: Parse HTML content into grouped blocks  Args:     html_content: HTML content to parse  Returns:  ...
+│   │   │   │   │   function parse_with_primary_parser: Parse using primary parser strategy  Args:     html_content: HTML content to parse  Returns:     ...
+│   │   │   │   │   function parse_with_fallback: Parse using fallback strategy  Args:     html_content: HTML content to parse  Returns:     List o...
+│   │   │   │   ├── i_file_downloader.py (853.0 B)
+│   │   │   │   │   class IFileDownloader: Handles file downloading operations
+│   │   │   │   │   method IFileDownloader.download_files: Download multiple files concurrently  Args:     file_links: List of (link_element, href) tuples  ...
+│   │   │   │   │   function download_files: Download multiple files concurrently  Args:     file_links: List of (link_element, href) tuples  ...
+│   │   │   │   ├── i_file_link_extractor.py (529.0 B)
+│   │   │   │   │   class IFileLinkExtractor: Extracts file links from HTML content
+│   │   │   │   │   method IFileLinkExtractor.extract_file_links: Extract file links from BeautifulSoup object  Args:     soup: BeautifulSoup object of the HTML  R...
+│   │   │   │   │   function extract_file_links: Extract file links from BeautifulSoup object  Args:     soup: BeautifulSoup object of the HTML  R...
+│   │   │   │   ├── i_html_processor.py (551.0 B)
+│   │   │   │   │   class IHTMLProcessor: Interface for HTML processing components.
+│   │   │   │   │   method IHTMLProcessor.process_html_block: Process an HTML block and extract structured data.  Args:     html_block: The HTML content to pro...
+│   │   │   │   │   function process_html_block: Process an HTML block and extract structured data.  Args:     html_block: The HTML content to pro...
+│   │   │   │   ├── i_raw_block_processor.py (591.0 B)
 │   │   │   │   │   class IRawBlockProcessor: Domain-level processor interface for processing a raw block dict.  The contract: accept a raw_dat...
 │   │   │   │   │   method IRawBlockProcessor.process: Process the raw_data and return the resulting raw_data (may be same object mutated).
 │   │   │   │   │   function process: Process the raw_data and return the resulting raw_data (may be same object mutated).
 │   │   │   │   └── i_task_classifier.py (1.1 KB)
-│   │   │   │       module __main__: Domain interface for task classification operations. This interface defines the contract for clas...
 │   │   │   │       class ITaskClassifier: Domain interface for task classification operations.
 │   │   │   │       method ITaskClassifier.classify_task: Classify a task based on KES/KOS codes and return classification result.  Args:     kes_codes: Li...
 │   │   │   │       function classify_task: Classify a task based on KES/KOS codes and return classification result.  Args:     kes_codes: Li...
 │   │   │   ├── repositories/
+│   │   │   │   ├── __init__.py (0 B)
 │   │   │   │   └── i_problem_repository.py (1.7 KB)
-│   │   │   │       module __main__: Domain interface for Problem repository operations.  This interface defines the contract for pers...
 │   │   │   │       class IProblemRepository: Interface for operations related to Problem persistence and retrieval.
 │   │   │   │       method IProblemRepository.save: Save a Problem entity to the persistence layer.  Args:     problem: The Problem entity to save.  ...
 │   │   │   │       method IProblemRepository.get_by_id: Retrieve a Problem entity by its unique identifier.  Args:     problem_id: The unique identifier ...
@@ -206,32 +248,97 @@
 │   │   │   │       function save: Save a Problem entity to the persistence layer.  Args:     problem: The Problem entity to save.  ...
 │   │   │   │       function get_by_id: Retrieve a Problem entity by its unique identifier.  Args:     problem_id: The unique identifier ...
 │   │   │   │       function get_by_subject: Retrieve all Problem entities associated with a specific subject name.  Args:     subject_name: T...
+│   │   │   ├── scraping/
+│   │   │   │   ├── __init__.py (178.0 B)
+│   │   │   │   │   module __main__: Scraping interfaces
+│   │   │   │   ├── i_content_fetcher.py (731.0 B)
+│   │   │   │   │   class IContentFetcher: Fetches HTML content from URLs with browser management
+│   │   │   │   │   method IContentFetcher.fetch_page_content: Fetch HTML content from URL  Args:     url: URL to fetch     timeout: Timeout in seconds  Returns...
+│   │   │   │   │   method IContentFetcher.setup_browser: Setup browser instance for content fetching
+│   │   │   │   │   method IContentFetcher.cleanup_browser: Cleanup browser resources
+│   │   │   │   │   function fetch_page_content: Fetch HTML content from URL  Args:     url: URL to fetch     timeout: Timeout in seconds  Returns...
+│   │   │   │   │   function setup_browser: Setup browser instance for content fetching
+│   │   │   │   │   function cleanup_browser: Cleanup browser resources
+│   │   │   │   ├── i_error_handler.py (461.0 B)
+│   │   │   │   │   class IErrorHandler: Handle errors during scraping process
+│   │   │   │   ├── i_iframe_handler.py (1.0 KB)
+│   │   │   │   │   class IIframeHandler: Handles iframe content extraction and processing
+│   │   │   │   │   method IIframeHandler.handle_iframe_content: Handle iframe content extraction with fallback  Args:     page: Browser page instance     url: Or...
+│   │   │   │   │   method IIframeHandler.find_questions_iframe: Find questions iframe in HTML content  Args:     soup: BeautifulSoup object  Returns:     Iframe ...
+│   │   │   │   │   function handle_iframe_content: Handle iframe content extraction with fallback  Args:     page: Browser page instance     url: Or...
+│   │   │   │   │   function find_questions_iframe: Find questions iframe in HTML content  Args:     soup: BeautifulSoup object  Returns:     Iframe ...
+│   │   │   │   ├── i_page_processor.py (523.0 B)
+│   │   │   │   │   class IPageProcessor: Process individual pages during scraping
+│   │   │   │   ├── i_progress_reporter.py (1.1 KB)
+│   │   │   │   │   class IProgressReporter: Interface for reporting scraping progress.
+│   │   │   │   │   method IProgressReporter.report_start: Report scraping start.
+│   │   │   │   │   method IProgressReporter.report_page_progress: Report page scraping progress.
+│   │   │   │   │   method IProgressReporter.report_page_error: Report page scraping error.
+│   │   │   │   │   method IProgressReporter.report_summary: Report scraping summary.
+│   │   │   │   │   function report_start: Report scraping start.
+│   │   │   │   │   function report_page_progress: Report page scraping progress.
+│   │   │   │   │   function report_page_error: Report page scraping error.
+│   │   │   │   │   function report_summary: Report scraping summary.
+│   │   │   │   ├── i_progress_service.py (800.0 B)
+│   │   │   │   │   module __main__: Domain interface for scraping progress service.
+│   │   │   │   │   class IProgressService: Interface for determining scraping progress and next page.
+│   │   │   │   │   method IProgressService.get_next_page_to_scrape: Get the next page number to scrape based on progress.  Args:     subject_info: Information about ...
+│   │   │   │   │   function get_next_page_to_scrape: Get the next page number to scrape based on progress.  Args:     subject_info: Information about ...
+│   │   │   │   └── i_result_aggregator.py (691.0 B)
+│   │   │   │       class IResultAggregator: Domain interface for aggregating scraping results
+│   │   │   │       method IResultAggregator.aggregate_results: Aggregate page results into final domain result
+│   │   │   │       function aggregate_results: Aggregate page results into final domain result
+│   │   │   ├── services/
+│   │   │   │   └── i_page_scraping_service.py (1.5 KB)
+│   │   │   │       class IPageScrapingService: Domain service interface for page scraping operations. Defines the core domain operation of scrap...
+│   │   │   │       method IPageScrapingService.scrape_page: Scrape a single page and return PageScrapingResult with domain entities.  Args:     url: The URL ...
+│   │   │   │       function scrape_page: Scrape a single page and return PageScrapingResult with domain entities.  Args:     url: The URL ...
 │   │   │   └── __init__.py (0 B)
 │   │   ├── models/
+│   │   │   ├── validators/
+│   │   │   │   └── __init__.py (51.0 B)
 │   │   │   ├── __init__.py (0 B)
-│   │   │   └── problem.py (4.2 KB)
+│   │   │   └── problem.py (4.5 KB)
 │   │   │       class Problem: Domain Entity representing an EGE problem after scraping and processing.  This entity holds the c...
 │   │   │       method Problem.__post_init__: Validate the problem after initialization.
+│   │   │       method Problem._validate: Internal validation method to avoid circular imports.
 │   │   │       method Problem.__eq__: Check equality based on the entity's identity (problem_id).
 │   │   │       method Problem.__hash__: Hash based on the entity's identity (problem_id).
 │   │   │       method Problem.is_answer_correct: Check if a user's answer matches the stored correct answer.
 │   │   │       method Problem.can_be_attempted: Check if the problem can be presented to a user for solving.
 │   │   │       method Problem.has_images: Check if the problem has associated images.
+│   │   │       method Problem.get_total_assets_count: Calculate the total number of images and files associated with the problem.
 │   │   │       method Problem.has_files: Check if the problem has associated files.
 │   │   │       method Problem.is_suitable_for_level: Check if the problem's difficulty matches a required level.
 │   │   │       function __post_init__: Validate the problem after initialization.
+│   │   │       function _validate: Internal validation method to avoid circular imports.
 │   │   │       function __eq__: Check equality based on the entity's identity (problem_id).
 │   │   │       function __hash__: Hash based on the entity's identity (problem_id).
 │   │   │       function is_answer_correct: Check if a user's answer matches the stored correct answer.
 │   │   │       function can_be_attempted: Check if the problem can be presented to a user for solving.
 │   │   │       function has_images: Check if the problem has associated images.
+│   │   │       function get_total_assets_count: Calculate the total number of images and files associated with the problem.
 │   │   │       function has_files: Check if the problem has associated files.
 │   │   │       function is_suitable_for_level: Check if the problem's difficulty matches a required level.
 │   │   ├── services/
 │   │   │   └── __init__.py (0 B)
 │   │   ├── value_objects/
+│   │   │   ├── scraping/
+│   │   │   │   ├── domain_scraping_result.py (789.0 B)
+│   │   │   │   │   class DomainScrapingResult: Domain-level representation of scraping results for internal domain use
+│   │   │   │   ├── page_processing_result.py (389.0 B)
+│   │   │   │   │   class PageProcessingResult: Domain representation of page processing result
+│   │   │   │   ├── page_scraping_result.py (586.0 B)
+│   │   │   │   │   class PageScrapingResult: Value Object representing the result of scraping a single page.
+│   │   │   │   ├── scraping_result.py (1.0 KB)
+│   │   │   │   │   class ScrapingResult: Value Object for scraping process results and statistics.
+│   │   │   │   │   method ScrapingResult.duration_seconds: Get duration of scraping in seconds.
+│   │   │   │   │   method ScrapingResult.success_rate: Get success rate as percentage.
+│   │   │   │   │   function duration_seconds: Get duration of scraping in seconds.
+│   │   │   │   │   function success_rate: Get success rate as percentage.
+│   │   │   │   └── subject_info.py (4.2 KB)
 │   │   │   ├── __init__.py (0 B)
-│   │   │   ├── difficulty_level.py (1.3 KB)
+│   │   │   ├── difficulty_level.py (1.2 KB)
 │   │   │   │   class DifficultyLevel: Value Object representing the difficulty level of a problem.
 │   │   │   │   method DifficultyLevel.__post_init__: Validate the difficulty level value after initialization.
 │   │   │   │   method DifficultyLevel.__str__: Return the string value of the enum.
@@ -239,12 +346,12 @@
 │   │   │   │   function __post_init__: Validate the difficulty level value after initialization.
 │   │   │   │   function __str__: Return the string value of the enum.
 │   │   │   │   function from_string: Create a DifficultyLevel instance from a string. Args:     level_str: String representation like ...
-│   │   │   ├── difficulty_level_enum.py (136.0 B)
-│   │   │   ├── problem_id.py (561.0 B)
+│   │   │   ├── difficulty_level_enum.py (137.0 B)
+│   │   │   ├── problem_id.py (562.0 B)
 │   │   │   │   class ProblemId: Value Object representing the unique identifier for a problem, extracted directly from the HTML (...
 │   │   │   │   method ProblemId.__post_init__: Validate the value after initialization.
 │   │   │   │   function __post_init__: Validate the value after initialization.
-│   │   │   └── subject.py (2.4 KB)
+│   │   │   └── subject.py (2.5 KB)
 │   │   │       class Subject: Value Object representing a subject for an EGE problem. Contains all identifiers and names associ...
 │   │   │       method Subject.__post_init__: Validate the subject data after initialization.
 │   │   │       method Subject.from_alias: Create a Subject instance from its alias using the mapping. Args:     alias: Short alias like 'ma...
@@ -256,15 +363,14 @@
 │   ├── infrastructure/
 │   │   ├── adapters/
 │   │   │   ├── external_services/
-│   │   │   │   ├── asset_downloader_adapter.py (3.6 KB)
-│   │   │   │   │   module __main__: Infrastructure adapter to make IAssetDownloader compatible with the old processor interface.  Thi...
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   ├── asset_downloader_adapter.py (3.4 KB)
 │   │   │   │   │   class AssetDownloaderAdapter: Adapts IAssetDownloader to the old 'downloader_instance.download(url, path, type)' interface. Use...
 │   │   │   │   │   method AssetDownloaderAdapter.__init__: Initialize the adapter.  Args:     asset_downloader_impl: The concrete implementation of IAssetDo...
 │   │   │   │   │   method AssetDownloaderAdapter.download: Download an asset from the web and save it to a local destination. This method mimics the interfa...
 │   │   │   │   │   function __init__: Initialize the adapter.  Args:     asset_downloader_impl: The concrete implementation of IAssetDo...
 │   │   │   │   │   function download: Download an asset from the web and save it to a local destination. This method mimics the interfa...
-│   │   │   │   └── playwright_asset_downloader_adapter.py (9.6 KB)
-│   │   │   │       module __main__: Infrastructure adapter implementing IAssetDownloader using Playwright's APIRequestContext.  This ...
+│   │   │   │   └── playwright_asset_downloader_adapter.py (9.5 KB)
 │   │   │   │       class PlaywrightAssetDownloaderAdapter: Infrastructure adapter implementing IAssetDownloader using Playwright's APIRequestContext.  This ...
 │   │   │   │       method PlaywrightAssetDownloaderAdapter.__init__: Initialize the adapter.  Args:     timeout: Default timeout for download requests in seconds.
 │   │   │   │       method PlaywrightAssetDownloaderAdapter.initialize: Initialize the Playwright context and API request context.
@@ -281,7 +387,8 @@
 │   │   │   │       function _download_with_aiohttp: Alternative download method using aiohttp in case of Playwright SSL issues.
 │   │   │   │       function _download_bytes_with_aiohttp: Alternative bytes download method using aiohttp in case of Playwright SSL issues.
 │   │   │   ├── html_processing/
-│   │   │   │   └── metadata_extractor_adapter.py (7.9 KB)
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   └── metadata_extractor_adapter.py (7.7 KB)
 │   │   │   │       class MetadataExtractorAdapter: Infrastructure adapter for extracting metadata from processed HTML blocks.  Business Rules: - Con...
 │   │   │   │       method MetadataExtractorAdapter.extract: Extract raw data from processed HTML blocks.
 │   │   │   │       method MetadataExtractorAdapter._extract_raw_data: Core extraction logic - pure function with no side effects.
@@ -311,7 +418,6 @@
 │   │   │   │       function _find_class_element: Find element by class name and get its text or value.
 │   │   │   ├── __init__.py (0 B)
 │   │   │   └── browser_pool_service_adapter.py (4.8 KB)
-│   │   │       module __main__: Infrastructure adapter implementing IBrowserService using a pool of BrowserManager instances.  Th...
 │   │   │       class BrowserPoolServiceAdapter: Implements IBrowserService using a pool of BrowserManager instances managed via asyncio.Queue. Th...
 │   │   │       method BrowserPoolServiceAdapter.__init__: Initialize the browser pool service adapter.  Args:     pool_size: The number of BrowserManager i...
 │   │   │       method BrowserPoolServiceAdapter.initialize: Initialize the browser pool by creating and initializing BrowserManager instances.
@@ -326,31 +432,47 @@
 │   │   │       function close: Close all BrowserManager instances in the pool.
 │   │   │       function get_page_content: Convenience method to get page content using a browser from the pool. This method gets a browser,...
 │   │   ├── browser_management/
-│   │   │   └── browser_manager.py (4.1 KB)
+│   │   │   ├── __init__.py (0 B)
+│   │   │   └── browser_manager.py (6.9 KB)
 │   │   │       module __main__: Module for managing a single Playwright browser instance. Creates a new page for each get_page_co...
 │   │   │       class BrowserManager: Manages a single browser instance. Creates a new page for each get_page_content request and close...
-│   │   │       method BrowserManager.initialize: Initialize the browser context.
+│   │   │       method BrowserManager.__init__: Initialize with centralized configuration support.
+│   │   │       method BrowserManager.initialize: Initialize the browser context with centralized configuration.
 │   │   │       method BrowserManager.close: Close the browser and playwright context.
 │   │   │       method BrowserManager.is_healthy: Check if the browser resource is healthy.
 │   │   │       method BrowserManager.get_page_content: Navigate to a URL on a *new* page, get the HTML content, and close the page.  Args:     url: The ...
-│   │   │       function initialize: Initialize the browser context.
+│   │   │       function __init__: Initialize with centralized configuration support.
+│   │   │       function initialize: Initialize the browser context with centralized configuration.
 │   │   │       function close: Close the browser and playwright context.
 │   │   │       function is_healthy: Check if the browser resource is healthy.
 │   │   │       function get_page_content: Navigate to a URL on a *new* page, get the HTML content, and close the page.  Args:     url: The ...
 │   │   ├── processors/
-│   │   │   └── html/
-│   │   │       ├── __init__.py (313.0 B)
-│   │   │       ├── file_link_processor.py (2.4 KB)
-│   │   │       │   class FileLinkProcessor: Downloads file links (pdf/doc/zip) and collects local paths. Expects 'downloader', 'run_folder_pa...
-│   │   │       ├── image_script_processor.py (3.6 KB)
-│   │   │       ├── input_field_remover.py (758.0 B)
-│   │   │       ├── mathml_remover.py (576.0 B)
-│   │   │       ├── task_info_processor.py (1.6 KB)
-│   │   │       └── unwanted_element_remover.py (743.0 B)
+│   │   │   ├── html/
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── file_downloader.py (1.8 KB)
+│   │   │   │   │   │   class FileDownloader: Handles file downloading operations
+│   │   │   │   │   │   method FileDownloader.download_files: Download multiple files concurrently
+│   │   │   │   │   │   function download_files: Download multiple files concurrently
+│   │   │   │   │   └── file_link_extractor.py (847.0 B)
+│   │   │   │   │       class FileLinkExtractor: Extracts file links from HTML content
+│   │   │   │   │       method FileLinkExtractor.extract_file_links: Extract file links from BeautifulSoup object
+│   │   │   │   │       function extract_file_links: Extract file links from BeautifulSoup object
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   ├── file_link_processor.py (2.3 KB)
+│   │   │   │   │   class FileLinkProcessor: Refactored FileLinkProcessor with separated concerns Complexity reduced from C (16) to A (<10)
+│   │   │   │   │   method FileLinkProcessor.process: Process file links with separated concerns
+│   │   │   │   │   function process: Process file links with separated concerns
+│   │   │   │   ├── image_script_processor.py (5.7 KB)
+│   │   │   │   │   method ImageScriptProcessor.__init__: Initialize with an asset downloader implementation.  Args:     asset_downloader: Implementation o...
+│   │   │   │   │   function __init__: Initialize with an asset downloader implementation.  Args:     asset_downloader: Implementation o...
+│   │   │   │   ├── input_field_remover.py (759.0 B)
+│   │   │   │   ├── mathml_remover.py (577.0 B)
+│   │   │   │   ├── task_info_processor.py (1.6 KB)
+│   │   │   │   └── unwanted_element_remover.py (744.0 B)
+│   │   │   └── __init__.py (0 B)
 │   │   ├── repositories/
 │   │   │   ├── __init__.py (0 B)
-│   │   │   └── sqlalchemy_problem_repository.py (10.7 KB)
-│   │   │       module __main__: Implementation of IProblemRepository using SQLAlchemy.  This class provides concrete implementati...
+│   │   │   └── sqlalchemy_problem_repository.py (10.8 KB)
 │   │   │       class Base: Base class for all SQLAlchemy ORM models in this module.
 │   │   │       class DBProblem: SQLAlchemy ORM model representing the 'problems' table.  This model maps the fields of the Proble...
 │   │   │       class SQLAlchemyProblemRepository: Implementation of IProblemRepository using SQLAlchemy.  This class handles the conversion between...
@@ -366,13 +488,44 @@
 │   │   │       function get_by_id: Retrieve a Problem entity by its unique identifier.  Args:     problem_id: The unique identifier ...
 │   │   │       function get_by_subject: Retrieve all Problem entities associated with a specific subject name.  Args:     subject_name: T...
 │   │   │       function _map_db_to_domain: Convert a DBProblem ORM model instance to a Problem domain entity.  Args:     db_problem: The DBP...
+│   │   ├── services/
+│   │   │   ├── page_scraping/
+│   │   │   │   └── components/
+│   │   │   │       ├── block_parser.py (2.2 KB)
+│   │   │   │       │   class BlockParser: Coordinates HTML block parsing with multiple strategies
+│   │   │   │       │   method BlockParser.parse_html_blocks: Parse HTML content into grouped blocks  Args:     html_content: HTML content to parse  Returns:  ...
+│   │   │   │       │   method BlockParser.parse_with_primary_parser: Parse using primary parser strategy  Args:     html_content: HTML content to parse  Returns:     ...
+│   │   │   │       │   method BlockParser.parse_with_fallback: Parse using fallback strategy  Args:     html_content: HTML content to parse  Returns:     List o...
+│   │   │   │       │   function parse_html_blocks: Parse HTML content into grouped blocks  Args:     html_content: HTML content to parse  Returns:  ...
+│   │   │   │       │   function parse_with_primary_parser: Parse using primary parser strategy  Args:     html_content: HTML content to parse  Returns:     ...
+│   │   │   │       │   function parse_with_fallback: Parse using fallback strategy  Args:     html_content: HTML content to parse  Returns:     List o...
+│   │   │   │       ├── content_fetcher.py (3.0 KB)
+│   │   │   │       │   class ContentFetcher: Fetches HTML content from URLs with browser management
+│   │   │   │       │   method ContentFetcher.setup_browser: Setup browser instance for content fetching
+│   │   │   │       │   method ContentFetcher.fetch_page_content: Fetch HTML content from URL  Args:     url: URL to fetch     timeout: Timeout in seconds  Returns...
+│   │   │   │       │   method ContentFetcher.cleanup_browser: Cleanup browser resources
+│   │   │   │       │   method ContentFetcher.get_page: Get the current page instance for additional operations
+│   │   │   │       │   function setup_browser: Setup browser instance for content fetching
+│   │   │   │       │   function fetch_page_content: Fetch HTML content from URL  Args:     url: URL to fetch     timeout: Timeout in seconds  Returns...
+│   │   │   │       │   function cleanup_browser: Cleanup browser resources
+│   │   │   │       │   function get_page: Get the current page instance for additional operations
+│   │   │   │       └── iframe_handler.py (2.7 KB)
+│   │   │   │           class IframeHandler: Handles iframe content extraction and processing
+│   │   │   │           method IframeHandler.handle_iframe_content: Handle iframe content extraction with fallback  Args:     page: Browser page instance     url: Or...
+│   │   │   │           method IframeHandler.find_questions_iframe: Find questions iframe in HTML content  Args:     soup: BeautifulSoup object  Returns:     Iframe ...
+│   │   │   │           function handle_iframe_content: Handle iframe content extraction with fallback  Args:     page: Browser page instance     url: Or...
+│   │   │   │           function find_questions_iframe: Find questions iframe in HTML content  Args:     soup: BeautifulSoup object  Returns:     Iframe ...
+│   │   │   └── page_scraping_adapter.py (2.8 KB)
+│   │   │       class PageScrapingAdapter: Adapter that makes the existing PageScrapingService compatible with the domain interface.  This a...
+│   │   │       method PageScrapingAdapter.scrape_page: Adapt the existing PageScrapingService to return PageScrapingResult.  The existing service now re...
+│   │   │       function scrape_page: Adapt the existing PageScrapingService to return PageScrapingResult.  The existing service now re...
 │   │   └── __init__.py (0 B)
 │   ├── presentation/
 │   │   ├── api/
 │   │   │   └── __init__.py (0 B)
 │   │   ├── cli/
 │   │   │   ├── __init__.py (0 B)
-│   │   │   └── scraping_cli_handler.py (6.2 KB)
+│   │   │   └── scraping_cli_handler.py (5.9 KB)
 │   │   │       module __main__: CLI handler for scraping operations. This module provides the command-line interface for triggeri...
 │   │   │       class ScrapingCLIHandler: CLI handler for scraping operations. Depends only on the ScrapeSubjectUseCase abstraction.
 │   │   │       method ScrapingCLIHandler.__init__: Initialize the CLI handler with the use case it will execute. Args:     scrape_use_case: The use ...
@@ -382,6 +535,9 @@
 │   │   │       function run_scraping: Run the scraping process for a given subject. Args:     subject_alias: Alias of the subject to sc...
 │   │   └── __init__.py (0 B)
 │   └── __init__.py (0 B)
+├── test_data/
+├── test_run_folder/
+│   └── assets/
 ├── tests/
 │   ├── application/
 │   │   ├── services/
@@ -396,6 +552,8 @@
 │   │   │   │   │       function __init__: Initialize the fake parser with predefined block groups.  Args:     predefined_blocks: List of bl...
 │   │   │   │   │       function parse_blocks: Return predefined block groups without actual parsing.  This method completely ignores the page_c...
 │   │   │   │   └── __init__.py (0 B)
+│   │   │   ├── page_scraping/
+│   │   │   │   └── fakes/
 │   │   │   ├── scraping/
 │   │   │   │   ├── fakes/
 │   │   │   │   │   ├── __init__.py (0 B)
@@ -412,6 +570,7 @@
 │   │   │   │   │       function get_by_subject: Get all problems for a subject from the in-memory store.
 │   │   │   │   │       function clear: Clear all problems from the store (useful for test setup).
 │   │   │   │   │       function all_problems: Get all problems currently stored (for verification in tests).
+│   │   │   │   ├── __init__.py (0 B)
 │   │   │   │   ├── test_progress_logic.py (5.9 KB)
 │   │   │   │   │   module __main__: Tests for scraping progress logic - functional core that determines next page to scrape.  These t...
 │   │   │   │   │   function create_test_problem: Helper to create test problems with consistent data
@@ -428,67 +587,91 @@
 │   │   │   │       function test_determine_next_page_returns_2_when_page_1_is_complete: When page 1 is fully scraped, next page should be 2
 │   │   │   │       function test_determine_next_page_returns_1_when_force_restart: When force_restart is True, always start from page 1 regardless of existing problems
 │   │   │   └── __init__.py (0 B)
-│   │   └── use_cases/
-│   │       └── scraping/
-│   │           └── test_scrape_subject_use_case_app.py (3.8 KB)
-│   │               module __main__: Unit tests for ScrapeSubjectUseCase that follow classical TDD principles. These tests focus on st...
-│   │               function mock_dependencies: Create mock dependencies for ScrapeSubjectUseCase.
-│   │               function subject_info: Create a sample SubjectInfo for testing.
-│   │               function test_force_restart_rescrapes_from_page_1: Test that force_restart=True causes scraping to start from page 1.
+│   │   ├── use_cases/
+│   │   │   ├── scraping/
+│   │   │   │   └── __init__.py (0 B)
+│   │   │   └── __init__.py (0 B)
+│   │   └── __init__.py (0 B)
 │   ├── architecture/
-│   │   └── test_architecture.py (4.9 KB)
-│   │       module __main__: Architecture tests for the project. These tests verify that architectural boundaries are not viol...
-│   │       function _get_all_python_files_in_dir: Helper to recursively find all .py files in a directory.
-│   │       function _extract_imports_from_file: Extract imported module names from a Python file using AST.
-│   │       function test_domain_layer_no_deps_on_application_or_infrastructure: Test that files in the domain layer do not import from application or infrastructure layers.
-│   │       function test_application_layer_no_deps_on_infrastructure_via_src: Test that files in the application layer do not directly import core infrastructure implementatio...
+│   │   ├── __init__.py (0 B)
+│   │   ├── test_architecture.py (4.9 KB)
+│   │   │   module __main__: Architecture tests for the project. These tests verify that architectural boundaries are not viol...
+│   │   │   function _get_all_python_files_in_dir: Helper to recursively find all .py files in a directory.
+│   │   │   function _extract_imports_from_file: Extract imported module names from a Python file using AST.
+│   │   │   function test_domain_layer_no_deps_on_application_or_infrastructure: Test that files in the domain layer do not import from application or infrastructure layers.
+│   │   │   function test_application_layer_no_deps_on_infrastructure_via_src: Test that files in the application layer do not directly import core infrastructure implementatio...
+│   │   └── test_clean_architecture.py (2.9 KB)
+│   │       function extract_imports_from_file: Extract all imports from a Python file.
+│   │       function test_domain_layer_independence: Test that domain layer doesn't depend on application or infrastructure.
+│   │       function test_application_layer_dependencies: Test that application layer only depends on domain.
+│   │       function test_new_architecture_components_exist: Test that all new architecture components are present.
 │   ├── e2e/
+│   │   └── __init__.py (0 B)
+│   ├── fakes/
+│   │   └── fake_asset_downloader.py (1.6 KB)
+│   │       class FakeAssetDownloader: Фейковый загрузчик активов (Fake), который имитирует успешную загрузку и возвращает фиксированный...
+│   │       method FakeAssetDownloader.download: Имитирует асинхронную загрузку файла.
+│   │       method FakeAssetDownloader.download_bytes: Имитирует асинхронную загрузку данных.
+│   │       function download: Имитирует асинхронную загрузку файла.
+│   │       function download_bytes: Имитирует асинхронную загрузку данных.
 │   ├── integration/
 │   │   ├── application/
-│   │   │   ├── test_html_block_processing_service_integration.py (4.3 KB)
+│   │   │   ├── use_cases/
+│   │   │   │   └── scraping/
+│   │   │   │       └── test_scrape_subject_use_case_integration.py (5.4 KB)
+│   │   │   │           function mock_services: Create mocked services for integration testing.
+│   │   │   │           method TestScrapeSubjectUseCaseIntegration.test_execute_successful_scraping: Test successful scraping execution with new architecture.
+│   │   │   │           method TestScrapeSubjectUseCaseIntegration.test_execute_with_force_restart: Test scraping with force restart.
+│   │   │   │           method TestScrapeSubjectUseCaseIntegration.test_execute_with_scraping_error: Test scraping execution when page scraping fails.
+│   │   │   │           function test_execute_successful_scraping: Test successful scraping execution with new architecture.
+│   │   │   │           function test_execute_with_force_restart: Test scraping with force restart.
+│   │   │   │           function test_execute_with_scraping_error: Test scraping execution when page scraping fails.
+│   │   │   ├── __init__.py (0 B)
+│   │   │   ├── test_html_block_processing_service_integration.py (4.8 KB)
 │   │   │   │   module __main__: Integration tests for HTMLBlockProcessingService. These tests verify the interaction between the ...
 │   │   │   │   function mock_asset_downloader: Mock for IAssetDownloader.
 │   │   │   │   function subject_info: Sample SubjectInfo.
 │   │   │   │   function sample_html_block_elements: A sample HTML block elements list that ElementIdentifier can recognize.
-│   │   │   │   function html_block_processing_service_with_real_processors: Create a real HTMLBlockProcessingService with *real* processors.
+│   │   │   │   function html_block_processing_service_with_real_processors: Create a real HTMLBlockProcessingService with *real* processors including ImageScriptProcessor.
 │   │   │   │   function test_html_block_processing_service_integration_with_real_processors: Test HTMLBlockProcessingService with real processors and mocked asset downloader. This verifies t...
-│   │   │   ├── test_page_scraping_service_integration.py (3.5 KB)
-│   │   │   │   module __main__: Integration tests for PageScrapingService that verify interaction with real dependencies.
-│   │   │   │   function mock_browser_service: Mock for IBrowserService.
-│   │   │   │   function mock_asset_downloader: Mock for IAssetDownloader.
-│   │   │   │   function mock_problem_factory: Mock for IProblemFactory.
-│   │   │   │   function html_block_processing_service: Create a real HTMLBlockProcessingService with correct dependencies.
-│   │   │   │   function asset_downloader_adapter: Create AssetDownloaderAdapter with mocked implementation and default_assets_dir.
-│   │   │   │   function page_scraping_service: Create a real PageScrapingService with all required dependencies.
-│   │   │   │   function test_page_scraping_service_basic_integration: Test that PageScrapingService can successfully scrape a page with minimal dependencies.
 │   │   │   └── test_scrape_subject_use_case_integration.py (3.8 KB)
 │   │   │       module __main__: Integration tests for ScrapeSubjectUseCase and PageScrapingService.
-│   │   └── infrastructure/
-│   │       ├── adapters/
-│   │       │   └── test_browser_pool_service_adapter.py (4.8 KB)
-│   │       │       module __main__: Integration tests for the BrowserPoolServiceAdapter. These tests use real BrowserManager instance...
-│   │       │       function browser_pool_adapter: Fixture to create and initialize a BrowserPoolServiceAdapter.
-│   │       │       function test_browser_pool_adapter_initialize_and_close: Test that BrowserPoolServiceAdapter initializes and closes correctly.
-│   │       │       function test_browser_pool_adapter_get_and_release_browser: Test getting and releasing a browser from the pool.
-│   │       │       function test_browser_pool_adapter_get_page_content_convenience: Test the convenience method get_page_content.
-│   │       │       function test_browser_pool_adapter_concurrent_access_improved: Test concurrent access to browsers from the pool. This test focuses on functionality and graceful...
-│   │       ├── browser_management/
-│   │       │   └── test_browser_manager.py (1.7 KB)
-│   │       │       module __main__: Integration tests for the BrowserManager.
-│   │       └── repositories/
-│   │           └── test_sqlalchemy_problem_repository.py (5.1 KB)
-│   │               module __main__: Integration tests for the SQLAlchemyProblemRepository.  These tests use a real SQLite database (i...
-│   │               function db_session: Create an in-memory SQLite database session for testing.
-│   │               function repository: Create a SQLAlchemyProblemRepository instance.
-│   │               function sample_problem: Create a sample Problem entity for testing.
-│   │               function test_save_and_get_by_id: Test saving a problem and retrieving it by ID.
-│   │               function test_get_by_id_not_found: Test retrieving a problem by ID that does not exist.
-│   │               function test_save_and_get_by_subject: Test saving multiple problems and retrieving them by subject.
+│   │   ├── infrastructure/
+│   │   │   ├── adapters/
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   └── test_browser_pool_service_adapter.py (4.8 KB)
+│   │   │   │       module __main__: Integration tests for the BrowserPoolServiceAdapter. These tests use real BrowserManager instance...
+│   │   │   │       function browser_pool_adapter: Fixture to create and initialize a BrowserPoolServiceAdapter.
+│   │   │   │       function test_browser_pool_adapter_initialize_and_close: Test that BrowserPoolServiceAdapter initializes and closes correctly.
+│   │   │   │       function test_browser_pool_adapter_get_and_release_browser: Test getting and releasing a browser from the pool.
+│   │   │   │       function test_browser_pool_adapter_get_page_content_convenience: Test the convenience method get_page_content.
+│   │   │   │       function test_browser_pool_adapter_concurrent_access_improved: Test concurrent access to browsers from the pool. This test focuses on functionality and graceful...
+│   │   │   ├── browser_management/
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   └── test_browser_manager.py (1.8 KB)
+│   │   │   │       module __main__: Integration tests for the BrowserManager.
+│   │   │   ├── repositories/
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   └── test_sqlalchemy_problem_repository.py (5.1 KB)
+│   │   │   │       module __main__: Integration tests for the SQLAlchemyProblemRepository.  These tests use a real SQLite database (i...
+│   │   │   │       function db_session: Create an in-memory SQLite database session for testing.
+│   │   │   │       function repository: Create a SQLAlchemyProblemRepository instance.
+│   │   │   │       function sample_problem: Create a sample Problem entity for testing.
+│   │   │   │       function test_save_and_get_by_id: Test saving a problem and retrieving it by ID.
+│   │   │   │       function test_get_by_id_not_found: Test retrieving a problem by ID that does not exist.
+│   │   │   │       function test_save_and_get_by_subject: Test saving multiple problems and retrieving them by subject.
+│   │   │   └── __init__.py (0 B)
+│   │   └── __init__.py (0 B)
 │   ├── unit/
 │   │   ├── application/
 │   │   │   ├── interfaces/
-│   │   │   │   └── factories/
+│   │   │   │   ├── factories/
+│   │   │   │   │   └── __init__.py (0 B)
+│   │   │   │   └── __init__.py (0 B)
 │   │   │   ├── services/
+│   │   │   │   ├── page_scraping/
+│   │   │   │   │   └── components/
+│   │   │   │   ├── __init__.py (0 B)
 │   │   │   │   └── test_scraping_orchestrator.py (5.0 KB)
 │   │   │   │       module __main__: Unit tests for ScrapingOrchestrator.
 │   │   │   │       function mock_scrape_use_case: Mock for ScrapeSubjectUseCase.
@@ -500,124 +683,282 @@
 │   │   │   │       function test_run_parallel_scraping_multiple_subjects: Test orchestrator runs scraping for multiple subjects concurrently.
 │   │   │   │       function test_run_parallel_scraping_handles_exception: Test orchestrator handles exceptions from a subject's scraping.
 │   │   │   ├── use_cases/
-│   │   │   │   └── scraping/
-│   │   │   │       └── test_scrape_subject_use_case.py (6.6 KB)
-│   │   │   │           module __main__: Unit tests for ScrapeSubjectUseCase.
-│   │   │   │           function mock_page_scraping_service: Mock for PageScrapingService.
-│   │   │   │           function mock_problem_repository: Mock for IProblemRepository.
-│   │   │   │           function mock_problem_factory: Mock for IProblemFactory.
-│   │   │   │           function mock_browser_service: Mock for IBrowserService.
-│   │   │   │           function mock_asset_downloader_impl: Mock for IAssetDownloader implementation.
-│   │   │   │           function use_case: Instance of ScrapeSubjectUseCase with mocked dependencies.
-│   │   │   │           method TestScrapeSubjectUseCase.test_successful_scraping: Test successful scraping execution.
-│   │   │   │           method TestScrapeSubjectUseCase.test_error_in_page_scraping: Test use case handles errors from PageScrapingService.
-│   │   │   │           method TestScrapeSubjectUseCase.test_force_restart_behavior: Test that force_restart is passed correctly to the repository.
-│   │   │   │           function test_successful_scraping: Test successful scraping execution.
-│   │   │   │           function test_error_in_page_scraping: Test use case handles errors from PageScrapingService.
-│   │   │   │           function test_force_restart_behavior: Test that force_restart is passed correctly to the repository.
-│   │   │   └── value_objects/
-│   │   │       └── scraping/
-│   │   │           ├── test_scraping_config.py (4.4 KB)
-│   │   │           │   module __main__: Unit tests for the ScrapingConfig value object.
-│   │   │           │   class TestScrapingConfigCreation: Tests for creating a ScrapingConfig instance.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_success_defaults: Test successful creation of a ScrapingConfig with default values.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_success_custom_values: Test successful creation of a ScrapingConfig with custom values.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_fails_negative_timeout: Test that creation fails if timeout_seconds is negative.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_fails_zero_timeout: Test that creation fails if timeout_seconds is zero.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_fails_negative_retry_attempts: Test that creation fails if retry_attempts is negative.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_fails_negative_retry_delay: Test that creation fails if retry_delay_seconds is negative.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_fails_zero_max_empty_pages: Test that creation fails if max_empty_pages is zero.
-│   │   │           │   method TestScrapingConfigCreation.test_creation_fails_negative_max_pages: Test that creation fails if max_pages is negative.
-│   │   │           │   method TestScrapingConfigCreation.test_equality_same_values: Test that ScrapingConfig instances with same values are equal.
-│   │   │           │   method TestScrapingConfigCreation.test_equality_different_values: Test that ScrapingConfig instances with different values are not equal.
-│   │   │           │   function test_creation_success_defaults: Test successful creation of a ScrapingConfig with default values.
-│   │   │           │   function test_creation_success_custom_values: Test successful creation of a ScrapingConfig with custom values.
-│   │   │           │   function test_creation_fails_negative_timeout: Test that creation fails if timeout_seconds is negative.
-│   │   │           │   function test_creation_fails_zero_timeout: Test that creation fails if timeout_seconds is zero.
-│   │   │           │   function test_creation_fails_negative_retry_attempts: Test that creation fails if retry_attempts is negative.
-│   │   │           │   function test_creation_fails_negative_retry_delay: Test that creation fails if retry_delay_seconds is negative.
-│   │   │           │   function test_creation_fails_zero_max_empty_pages: Test that creation fails if max_empty_pages is zero.
-│   │   │           │   function test_creation_fails_negative_max_pages: Test that creation fails if max_pages is negative.
-│   │   │           │   function test_equality_same_values: Test that ScrapingConfig instances with same values are equal.
-│   │   │           │   function test_equality_different_values: Test that ScrapingConfig instances with different values are not equal.
-│   │   │           ├── test_scraping_result.py (5.4 KB)
-│   │   │           │   module __main__: Unit tests for the ScrapingResult value object.
-│   │   │           │   class TestScrapingResult: Tests for ScrapingResult value object.
-│   │   │           │   method TestScrapingResult.test_creation_success: Test successful creation of a ScrapingResult with valid data.
-│   │   │           │   method TestScrapingResult.test_duration_seconds: Test the duration_seconds property.
-│   │   │           │   method TestScrapingResult.test_success_rate: Test the success_rate property.
-│   │   │           │   method TestScrapingResult.test_equality_same_values: Test that ScrapingResult instances with same values are equal.
-│   │   │           │   method TestScrapingResult.test_equality_different_values: Test that ScrapingResult instances with different values are not equal.
-│   │   │           │   function test_creation_success: Test successful creation of a ScrapingResult with valid data.
-│   │   │           │   function test_duration_seconds: Test the duration_seconds property.
-│   │   │           │   function test_success_rate: Test the success_rate property.
-│   │   │           │   function test_equality_same_values: Test that ScrapingResult instances with same values are equal.
-│   │   │           │   function test_equality_different_values: Test that ScrapingResult instances with different values are not equal.
-│   │   │           └── test_subject_info.py (3.6 KB)
-│   │   │               module __main__: Unit tests for the SubjectInfo value object.
-│   │   │               class TestSubjectInfoCreation: Tests for creating a SubjectInfo instance.
-│   │   │               method TestSubjectInfoCreation.test_creation_success: Test successful creation of a SubjectInfo with valid data.
-│   │   │               method TestSubjectInfoCreation.test_creation_fails_empty_alias: Test that creation fails if alias is empty.
-│   │   │               method TestSubjectInfoCreation.test_creation_fails_empty_official_name: Test that creation fails if official_name is empty.
-│   │   │               method TestSubjectInfoCreation.test_creation_fails_empty_proj_id: Test that creation fails if proj_id is empty.
-│   │   │               method TestSubjectInfoCreation.test_creation_fails_invalid_exam_year: Test that creation fails if exam_year is out of range.
-│   │   │               method TestSubjectInfoCreation.test_equality_same_values: Test that SubjectInfo instances with same values are equal.
-│   │   │               method TestSubjectInfoCreation.test_equality_different_values: Test that SubjectInfo instances with different values are not equal.
-│   │   │               function test_creation_success: Test successful creation of a SubjectInfo with valid data.
-│   │   │               function test_creation_fails_empty_alias: Test that creation fails if alias is empty.
-│   │   │               function test_creation_fails_empty_official_name: Test that creation fails if official_name is empty.
-│   │   │               function test_creation_fails_empty_proj_id: Test that creation fails if proj_id is empty.
-│   │   │               function test_creation_fails_invalid_exam_year: Test that creation fails if exam_year is out of range.
-│   │   │               function test_equality_same_values: Test that SubjectInfo instances with same values are equal.
-│   │   │               function test_equality_different_values: Test that SubjectInfo instances with different values are not equal.
+│   │   │   │   ├── scraping/
+│   │   │   │   │   ├── components/
+│   │   │   │   │   │   ├── test_page_processor.py (4.6 KB)
+│   │   │   │   │   │   │   method TestPageProcessor.test_process_page_success: Test successful page processing.
+│   │   │   │   │   │   │   method TestPageProcessor.test_process_page_empty_result: Test page processing with empty result.
+│   │   │   │   │   │   │   method TestPageProcessor.test_process_page_error: Test page processing with error.
+│   │   │   │   │   │   │   function test_process_page_success: Test successful page processing.
+│   │   │   │   │   │   │   function test_process_page_empty_result: Test page processing with empty result.
+│   │   │   │   │   │   │   function test_process_page_error: Test page processing with error.
+│   │   │   │   │   │   ├── test_result_composer.py (4.3 KB)
+│   │   │   │   │   │   │   method TestResultComposer.test_compose_final_result_success: Test composing successful result.
+│   │   │   │   │   │   │   method TestResultComposer.test_compose_final_result_with_errors: Test composing result with errors.
+│   │   │   │   │   │   │   method TestResultComposer.test_compose_final_result_empty: Test composing result with no pages processed.
+│   │   │   │   │   │   │   function test_compose_final_result_success: Test composing successful result.
+│   │   │   │   │   │   │   function test_compose_final_result_with_errors: Test composing result with errors.
+│   │   │   │   │   │   │   function test_compose_final_result_empty: Test composing result with no pages processed.
+│   │   │   │   │   │   └── test_scraping_loop_controller.py (7.7 KB)
+│   │   │   │   │   │       class FakePageProcessor: Fake implementation of PageProcessor for robust testing of the controller loop logic.
+│   │   │   │   │   │       method TestScrapingLoopController.test_run_loop_success: Test successful loop execution, compensating for observed controller behavior (5 calls, meaning 3...
+│   │   │   │   │   │       method TestScrapingLoopController.test_run_loop_with_max_pages: Test loop execution with max pages limit.
+│   │   │   │   │   │       method TestScrapingLoopController.test_run_loop_with_error: Test loop execution with page error.
+│   │   │   │   │   │       method TestScrapingLoopController.test_run_loop_stop_on_empty_pages: Test loop stops on consecutive empty pages (max_empty_pages=2).
+│   │   │   │   │   │       function test_run_loop_success: Test successful loop execution, compensating for observed controller behavior (5 calls, meaning 3...
+│   │   │   │   │   │       function test_run_loop_with_max_pages: Test loop execution with max pages limit.
+│   │   │   │   │   │       function test_run_loop_with_error: Test loop execution with page error.
+│   │   │   │   │   │       function test_run_loop_stop_on_empty_pages: Test loop stops on consecutive empty pages (max_empty_pages=2).
+│   │   │   │   │   └── __init__.py (0 B)
+│   │   │   │   └── __init__.py (0 B)
+│   │   │   ├── value_objects/
+│   │   │   │   ├── scraping/
+│   │   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   │   ├── test_scraping_config.py (4.4 KB)
+│   │   │   │   │   │   module __main__: Unit tests for the ScrapingConfig value object.
+│   │   │   │   │   │   class TestScrapingConfigCreation: Tests for creating a ScrapingConfig instance.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_success_defaults: Test successful creation of a ScrapingConfig with default values.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_success_custom_values: Test successful creation of a ScrapingConfig with custom values.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_fails_negative_timeout: Test that creation fails if timeout_seconds is negative.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_fails_zero_timeout: Test that creation fails if timeout_seconds is zero.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_fails_negative_retry_attempts: Test that creation fails if retry_attempts is negative.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_fails_negative_retry_delay: Test that creation fails if retry_delay_seconds is negative.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_fails_zero_max_empty_pages: Test that creation fails if max_empty_pages is zero.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_creation_fails_negative_max_pages: Test that creation fails if max_pages is negative.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_equality_same_values: Test that ScrapingConfig instances with same values are equal.
+│   │   │   │   │   │   method TestScrapingConfigCreation.test_equality_different_values: Test that ScrapingConfig instances with different values are not equal.
+│   │   │   │   │   │   function test_creation_success_defaults: Test successful creation of a ScrapingConfig with default values.
+│   │   │   │   │   │   function test_creation_success_custom_values: Test successful creation of a ScrapingConfig with custom values.
+│   │   │   │   │   │   function test_creation_fails_negative_timeout: Test that creation fails if timeout_seconds is negative.
+│   │   │   │   │   │   function test_creation_fails_zero_timeout: Test that creation fails if timeout_seconds is zero.
+│   │   │   │   │   │   function test_creation_fails_negative_retry_attempts: Test that creation fails if retry_attempts is negative.
+│   │   │   │   │   │   function test_creation_fails_negative_retry_delay: Test that creation fails if retry_delay_seconds is negative.
+│   │   │   │   │   │   function test_creation_fails_zero_max_empty_pages: Test that creation fails if max_empty_pages is zero.
+│   │   │   │   │   │   function test_creation_fails_negative_max_pages: Test that creation fails if max_pages is negative.
+│   │   │   │   │   │   function test_equality_same_values: Test that ScrapingConfig instances with same values are equal.
+│   │   │   │   │   │   function test_equality_different_values: Test that ScrapingConfig instances with different values are not equal.
+│   │   │   │   │   └── test_subject_info.py (3.6 KB)
+│   │   │   │   │       module __main__: Unit tests for the SubjectInfo value object.
+│   │   │   │   │       class TestSubjectInfoCreation: Tests for creating a SubjectInfo instance.
+│   │   │   │   │       method TestSubjectInfoCreation.test_creation_success: Test successful creation of a SubjectInfo with valid data.
+│   │   │   │   │       method TestSubjectInfoCreation.test_creation_fails_empty_alias: Test that creation fails if alias is empty.
+│   │   │   │   │       method TestSubjectInfoCreation.test_creation_fails_empty_official_name: Test that creation fails if official_name is empty.
+│   │   │   │   │       method TestSubjectInfoCreation.test_creation_fails_empty_proj_id: Test that creation fails if proj_id is empty.
+│   │   │   │   │       method TestSubjectInfoCreation.test_creation_fails_invalid_exam_year: Test that creation fails if exam_year is out of range.
+│   │   │   │   │       method TestSubjectInfoCreation.test_equality_same_values: Test that SubjectInfo instances with same values are equal.
+│   │   │   │   │       method TestSubjectInfoCreation.test_equality_different_values: Test that SubjectInfo instances with different values are not equal.
+│   │   │   │   │       function test_creation_success: Test successful creation of a SubjectInfo with valid data.
+│   │   │   │   │       function test_creation_fails_empty_alias: Test that creation fails if alias is empty.
+│   │   │   │   │       function test_creation_fails_empty_official_name: Test that creation fails if official_name is empty.
+│   │   │   │   │       function test_creation_fails_empty_proj_id: Test that creation fails if proj_id is empty.
+│   │   │   │   │       function test_creation_fails_invalid_exam_year: Test that creation fails if exam_year is out of range.
+│   │   │   │   │       function test_equality_same_values: Test that SubjectInfo instances with same values are equal.
+│   │   │   │   │       function test_equality_different_values: Test that SubjectInfo instances with different values are not equal.
+│   │   │   │   └── __init__.py (0 B)
+│   │   │   └── __init__.py (0 B)
 │   │   ├── domain/
 │   │   │   ├── html_processing/
+│   │   │   │   ├── __init__.py (0 B)
+│   │   │   │   ├── test_extract_block_pairs_fipi_refactor.py (6.9 KB)
+│   │   │   │   │   module __main__: Unit tests for extract_block_pairs function refactoring using classical TDD. These tests verify t...
+│   │   │   │   │   function test_extract_block_pairs_finds_qblocks_with_ids: Test that extract_block_pairs finds qblocks with IDs and creates proper header-body pairs.
+│   │   │   │   │   function test_extract_block_pairs_handles_common_context_single_window: Test that extract_block_pairs handles a single common context correctly.
+│   │   │   │   │   function test_extract_block_pairs_handles_multiple_common_contexts: Test that extract_block_pairs handles multiple common contexts correctly.
+│   │   │   │   │   function test_extract_block_pairs_empty_page: Test that extract_block_pairs returns empty list for empty page.
+│   │   │   │   │   function test_extract_block_pairs_no_qblocks: Test that extract_block_pairs returns empty list when no qblocks found.
+│   │   │   │   │   function test_extract_block_pairs_qblocks_without_ids: Test that extract_block_pairs handles qblocks without IDs (common context only).
+│   │   │   │   ├── test_extract_block_pairs_with_context.py (4.4 KB)
+│   │   │   │   │   module __main__: Unit tests for extract_block_pairs function with real FIPI page structure. Tests the scenario wit...
+│   │   │   │   │   method TestExtractBlockPairsWithContext.test_extract_block_pairs_with_common_qblock: Test extraction when there's a common qblock without ID followed by qblocks with IDs.
+│   │   │   │   │   method TestExtractBlockPairsWithContext.test_extract_block_pairs_without_common_qblock: Test extraction when there are only individual qblocks with IDs.
+│   │   │   │   │   method TestExtractBlockPairsWithContext.test_extract_block_pairs_empty_page: Test extraction with an empty page.
+│   │   │   │   │   method TestExtractBlockPairsWithContext.test_extract_block_pairs_no_qblocks: Test extraction when there are no qblocks.
+│   │   │   │   │   function test_extract_block_pairs_with_common_qblock: Test extraction when there's a common qblock without ID followed by qblocks with IDs.
+│   │   │   │   │   function test_extract_block_pairs_without_common_qblock: Test extraction when there are only individual qblocks with IDs.
+│   │   │   │   │   function test_extract_block_pairs_empty_page: Test extraction with an empty page.
+│   │   │   │   │   function test_extract_block_pairs_no_qblocks: Test extraction when there are no qblocks.
 │   │   │   │   └── test_pure_html_transforms.py (1.3 KB)
-│   │   │   └── test_problem.py (11.3 KB)
-│   │   │       module __main__: Unit tests for the Problem domain entity.  These tests verify the behavior, validation (invariant...
-│   │   │       class TestProblemCreation: Tests for creating a Problem instance.
-│   │   │       method TestProblemCreation.test_creation_success: Test successful creation of a Problem with valid data.
-│   │   │       method TestProblemCreation.test_creation_defaults: Test creation with minimal required data and default values.
-│   │   │       class TestProblemValidation: Tests for Problem validation (invariants).
-│   │   │       method TestProblemValidation.test_creation_fails_empty_text: Test that creation fails if text is empty.
-│   │   │       method TestProblemValidation.test_creation_fails_invalid_exam_part: Test that creation fails if exam_part is invalid.
-│   │   │       method TestProblemValidation.test_creation_fails_task_number_out_of_range: Test that creation fails if task_number is out of range.
-│   │   │       method TestProblemValidation.test_creation_fails_invalid_difficulty_level: Test that creation fails if difficulty_level is invalid.
-│   │   │       class TestProblemIdentity: Tests for Problem identity methods (__eq__, __hash__).
-│   │   │       method TestProblemIdentity.test_equality_same_id: Test that Problems with the same problem_id are equal.
-│   │   │       method TestProblemIdentity.test_equality_different_id: Test that Problems with different problem_id are not equal.
-│   │   │       method TestProblemIdentity.test_equality_not_same_type: Test that Problem is not equal to a non-Problem object.
-│   │   │       class TestProblemBehavior: Tests for Problem behavior methods.
-│   │   │       method TestProblemBehavior.test_is_answer_correct_true: Test is_answer_correct returns True for a matching answer.
-│   │   │       method TestProblemBehavior.test_is_answer_correct_false_no_answer: Test is_answer_correct returns False if no correct answer is set.
-│   │   │       method TestProblemBehavior.test_can_be_attempted_true: Test can_be_attempted returns True if text is present.
-│   │   │       method TestProblemBehavior.test_can_be_attempted_false_empty_text: Test can_be_attempted returns False if text is empty.
-│   │   │       method TestProblemBehavior.test_has_images_true: Test has_images returns True if images list is not empty.
-│   │   │       method TestProblemBehavior.test_has_images_false_empty_list: Test has_images returns False if images list is empty.
-│   │   │       method TestProblemBehavior.test_is_suitable_for_level_true: Test is_suitable_for_level returns True for matching level.
-│   │   │       method TestProblemBehavior.test_is_suitable_for_level_false_not_matching: Test is_suitable_for_level returns False for non-matching level.
-│   │   │       method TestProblemBehavior.test_is_suitable_for_level_false_none_level: Test is_suitable_for_level returns False if problem's level is None.
-│   │   │       function test_creation_success: Test successful creation of a Problem with valid data.
-│   │   │       function test_creation_defaults: Test creation with minimal required data and default values.
-│   │   │       function test_creation_fails_empty_text: Test that creation fails if text is empty.
-│   │   │       function test_creation_fails_invalid_exam_part: Test that creation fails if exam_part is invalid.
-│   │   │       function test_creation_fails_task_number_out_of_range: Test that creation fails if task_number is out of range.
-│   │   │       function test_creation_fails_invalid_difficulty_level: Test that creation fails if difficulty_level is invalid.
-│   │   │       function test_equality_same_id: Test that Problems with the same problem_id are equal.
-│   │   │       function test_equality_different_id: Test that Problems with different problem_id are not equal.
-│   │   │       function test_equality_not_same_type: Test that Problem is not equal to a non-Problem object.
-│   │   │       function test_is_answer_correct_true: Test is_answer_correct returns True for a matching answer.
-│   │   │       function test_is_answer_correct_false_no_answer: Test is_answer_correct returns False if no correct answer is set.
-│   │   │       function test_can_be_attempted_true: Test can_be_attempted returns True if text is present.
-│   │   │       function test_can_be_attempted_false_empty_text: Test can_be_attempted returns False if text is empty.
-│   │   │       function test_has_images_true: Test has_images returns True if images list is not empty.
-│   │   │       function test_has_images_false_empty_list: Test has_images returns False if images list is empty.
-│   │   │       function test_is_suitable_for_level_true: Test is_suitable_for_level returns True for matching level.
-│   │   │       function test_is_suitable_for_level_false_not_matching: Test is_suitable_for_level returns False for non-matching level.
-│   │   │       function test_is_suitable_for_level_false_none_level: Test is_suitable_for_level returns False if problem's level is None.
+│   │   │   ├── value_objects/
+│   │   │   │   └── scraping/
+│   │   │   │       └── test_scraping_result.py (5.4 KB)
+│   │   │   │           module __main__: Unit tests for the ScrapingResult value object.
+│   │   │   │           class TestScrapingResult: Tests for ScrapingResult value object.
+│   │   │   │           method TestScrapingResult.test_creation_success: Test successful creation of a ScrapingResult with valid data.
+│   │   │   │           method TestScrapingResult.test_duration_seconds: Test the duration_seconds property.
+│   │   │   │           method TestScrapingResult.test_success_rate: Test the success_rate property.
+│   │   │   │           method TestScrapingResult.test_equality_same_values: Test that ScrapingResult instances with same values are equal.
+│   │   │   │           method TestScrapingResult.test_equality_different_values: Test that ScrapingResult instances with different values are not equal.
+│   │   │   │           function test_creation_success: Test successful creation of a ScrapingResult with valid data.
+│   │   │   │           function test_duration_seconds: Test the duration_seconds property.
+│   │   │   │           function test_success_rate: Test the success_rate property.
+│   │   │   │           function test_equality_same_values: Test that ScrapingResult instances with same values are equal.
+│   │   │   │           function test_equality_different_values: Test that ScrapingResult instances with different values are not equal.
+│   │   │   ├── __init__.py (0 B)
+│   │   │   ├── test_problem.py (11.3 KB)
+│   │   │   │   module __main__: Unit tests for the Problem domain entity.  These tests verify the behavior, validation (invariant...
+│   │   │   │   class TestProblemCreation: Tests for creating a Problem instance.
+│   │   │   │   method TestProblemCreation.test_creation_success: Test successful creation of a Problem with valid data.
+│   │   │   │   method TestProblemCreation.test_creation_defaults: Test creation with minimal required data and default values.
+│   │   │   │   class TestProblemValidation: Tests for Problem validation (invariants).
+│   │   │   │   method TestProblemValidation.test_creation_fails_empty_text: Test that creation fails if text is empty.
+│   │   │   │   method TestProblemValidation.test_creation_fails_invalid_exam_part: Test that creation fails if exam_part is invalid.
+│   │   │   │   method TestProblemValidation.test_creation_fails_task_number_out_of_range: Test that creation fails if task_number is out of range.
+│   │   │   │   method TestProblemValidation.test_creation_fails_invalid_difficulty_level: Test that creation fails if difficulty_level is invalid.
+│   │   │   │   class TestProblemIdentity: Tests for Problem identity methods (__eq__, __hash__).
+│   │   │   │   method TestProblemIdentity.test_equality_same_id: Test that Problems with the same problem_id are equal.
+│   │   │   │   method TestProblemIdentity.test_equality_different_id: Test that Problems with different problem_id are not equal.
+│   │   │   │   method TestProblemIdentity.test_equality_not_same_type: Test that Problem is not equal to a non-Problem object.
+│   │   │   │   class TestProblemBehavior: Tests for Problem behavior methods.
+│   │   │   │   method TestProblemBehavior.test_is_answer_correct_true: Test is_answer_correct returns True for a matching answer.
+│   │   │   │   method TestProblemBehavior.test_is_answer_correct_false_no_answer: Test is_answer_correct returns False if no correct answer is set.
+│   │   │   │   method TestProblemBehavior.test_can_be_attempted_true: Test can_be_attempted returns True if text is present.
+│   │   │   │   method TestProblemBehavior.test_can_be_attempted_false_empty_text: Test can_be_attempted returns False if text is empty.
+│   │   │   │   method TestProblemBehavior.test_has_images_true: Test has_images returns True if images list is not empty.
+│   │   │   │   method TestProblemBehavior.test_has_images_false_empty_list: Test has_images returns False if images list is empty.
+│   │   │   │   method TestProblemBehavior.test_is_suitable_for_level_true: Test is_suitable_for_level returns True for matching level.
+│   │   │   │   method TestProblemBehavior.test_is_suitable_for_level_false_not_matching: Test is_suitable_for_level returns False for non-matching level.
+│   │   │   │   method TestProblemBehavior.test_is_suitable_for_level_false_none_level: Test is_suitable_for_level returns False if problem's level is None.
+│   │   │   │   function test_creation_success: Test successful creation of a Problem with valid data.
+│   │   │   │   function test_creation_defaults: Test creation with minimal required data and default values.
+│   │   │   │   function test_creation_fails_empty_text: Test that creation fails if text is empty.
+│   │   │   │   function test_creation_fails_invalid_exam_part: Test that creation fails if exam_part is invalid.
+│   │   │   │   function test_creation_fails_task_number_out_of_range: Test that creation fails if task_number is out of range.
+│   │   │   │   function test_creation_fails_invalid_difficulty_level: Test that creation fails if difficulty_level is invalid.
+│   │   │   │   function test_equality_same_id: Test that Problems with the same problem_id are equal.
+│   │   │   │   function test_equality_different_id: Test that Problems with different problem_id are not equal.
+│   │   │   │   function test_equality_not_same_type: Test that Problem is not equal to a non-Problem object.
+│   │   │   │   function test_is_answer_correct_true: Test is_answer_correct returns True for a matching answer.
+│   │   │   │   function test_is_answer_correct_false_no_answer: Test is_answer_correct returns False if no correct answer is set.
+│   │   │   │   function test_can_be_attempted_true: Test can_be_attempted returns True if text is present.
+│   │   │   │   function test_can_be_attempted_false_empty_text: Test can_be_attempted returns False if text is empty.
+│   │   │   │   function test_has_images_true: Test has_images returns True if images list is not empty.
+│   │   │   │   function test_has_images_false_empty_list: Test has_images returns False if images list is empty.
+│   │   │   │   function test_is_suitable_for_level_true: Test is_suitable_for_level returns True for matching level.
+│   │   │   │   function test_is_suitable_for_level_false_not_matching: Test is_suitable_for_level returns False for non-matching level.
+│   │   │   │   function test_is_suitable_for_level_false_none_level: Test is_suitable_for_level returns False if problem's level is None.
+│   │   │   └── test_problem_post_init.py (6.7 KB)
+│   │   │       module __main__: Unit tests for Problem.__post_init__ method. These tests verify the validation and default value ...
+│   │   │       method TestProblemPostInit.test_post_init_sets_defaults_correctly: Test that __post_init__ sets default empty lists and current datetime.
+│   │   │       method TestProblemPostInit.test_post_init_preserves_provided_lists: Test that __post_init__ does not overwrite provided lists.
+│   │   │       method TestProblemPostInit.test_post_init_sets_current_datetime_if_none_provided: Test that __post_init__ sets current datetime if not provided.
+│   │   │       method TestProblemPostInit.test_post_init_preserves_provided_datetime: Test that __post_init__ does not overwrite provided datetime.
+│   │   │       method TestProblemPostInit.test_post_init_raises_for_empty_text: Test that __post_init__ raises ValueError for empty text.
+│   │   │       method TestProblemPostInit.test_post_init_raises_for_whitespace_only_text: Test that __post_init__ raises ValueError for whitespace-only text.
+│   │   │       method TestProblemPostInit.test_post_init_validates_exam_part_correctly: Test that __post_init__ validates exam_part values.
+│   │   │       method TestProblemPostInit.test_post_init_validates_task_number_correctly: Test that __post_init__ validates task_number range.
+│   │   │       method TestProblemPostInit.test_post_init_validates_difficulty_level_correctly: Test that __post_init__ validates difficulty_level values.
+│   │   │       function test_post_init_sets_defaults_correctly: Test that __post_init__ sets default empty lists and current datetime.
+│   │   │       function test_post_init_preserves_provided_lists: Test that __post_init__ does not overwrite provided lists.
+│   │   │       function test_post_init_sets_current_datetime_if_none_provided: Test that __post_init__ sets current datetime if not provided.
+│   │   │       function test_post_init_preserves_provided_datetime: Test that __post_init__ does not overwrite provided datetime.
+│   │   │       function test_post_init_raises_for_empty_text: Test that __post_init__ raises ValueError for empty text.
+│   │   │       function test_post_init_raises_for_whitespace_only_text: Test that __post_init__ raises ValueError for whitespace-only text.
+│   │   │       function test_post_init_validates_exam_part_correctly: Test that __post_init__ validates exam_part values.
+│   │   │       function test_post_init_validates_task_number_correctly: Test that __post_init__ validates task_number range.
+│   │   │       function test_post_init_validates_difficulty_level_correctly: Test that __post_init__ validates difficulty_level values.
 │   │   ├── infrastructure/
-│   │   └── presentation/
-│   └── conftest.py (2.0 KB)
+│   │   │   ├── processors/
+│   │   │   │   └── html/
+│   │   │   │       ├── components/
+│   │   │   │       │   ├── test_file_downloader.py (1.7 KB)
+│   │   │   │       │   │   module __main__: Tests for FileDownloader component
+│   │   │   │       │   │   class TestFileDownloader: Test suite for FileDownloader
+│   │   │   │       │   │   method TestFileDownloader.test_download_files_empty_list: Test downloading with empty file list
+│   │   │   │       │   │   method TestFileDownloader.test_download_single_file: Test downloading single file
+│   │   │   │       │   │   function test_download_files_empty_list: Test downloading with empty file list
+│   │   │   │       │   │   function test_download_single_file: Test downloading single file
+│   │   │   │       │   └── test_file_link_extractor.py (1.6 KB)
+│   │   │   │       │       module __main__: Tests for FileLinkExtractor component
+│   │   │   │       │       class TestFileLinkExtractor: Test suite for FileLinkExtractor
+│   │   │   │       │       method TestFileLinkExtractor.test_extract_no_links: Test extraction with no file links
+│   │   │   │       │       method TestFileLinkExtractor.test_extract_pdf_links: Test extraction of PDF links
+│   │   │   │       │       method TestFileLinkExtractor.test_extract_multiple_file_types: Test extraction of multiple file types
+│   │   │   │       │       function test_extract_no_links: Test extraction with no file links
+│   │   │   │       │       function test_extract_pdf_links: Test extraction of PDF links
+│   │   │   │       │       function test_extract_multiple_file_types: Test extraction of multiple file types
+│   │   │   │       └── refactored/
+│   │   │   │           ├── test_file_link_processor_comprehensive.py (3.4 KB)
+│   │   │   │           │   module __main__: Comprehensive tests for FileLinkProcessor refactoring (Using Fakes)
+│   │   │   │           │   class TestFileLinkProcessorComprehensive: Comprehensive test suite for FileLinkProcessor (using Fakes)
+│   │   │   │           │   method TestFileLinkProcessorComprehensive.test_process_empty_html: Test processing empty HTML
+│   │   │   │           │   method TestFileLinkProcessorComprehensive.test_process_no_file_links: Test HTML with no file links
+│   │   │   │           │   method TestFileLinkProcessorComprehensive.test_process_pdf_link: Test PDF link processing
+│   │   │   │           │   method TestFileLinkProcessorComprehensive.test_process_multiple_file_types: Test multiple file types
+│   │   │   │           │   function test_process_empty_html: Test processing empty HTML
+│   │   │   │           │   function test_process_no_file_links: Test HTML with no file links
+│   │   │   │           │   function test_process_pdf_link: Test PDF link processing
+│   │   │   │           │   function test_process_multiple_file_types: Test multiple file types
+│   │   │   │           ├── test_file_link_processor_integration.py (2.0 KB)
+│   │   │   │           │   module __main__: Integration tests for refactored FileLinkProcessor
+│   │   │   │           │   class TestFileLinkProcessorRefactoredIntegration: Integration tests for refactored FileLinkProcessor
+│   │   │   │           │   method TestFileLinkProcessorRefactoredIntegration.test_integration_pdf_download: Test full integration with PDF download
+│   │   │   │           │   method TestFileLinkProcessorRefactoredIntegration.test_integration_no_downloader: Test behavior when no downloader is available
+│   │   │   │           │   function test_integration_pdf_download: Test full integration with PDF download
+│   │   │   │           │   function test_integration_no_downloader: Test behavior when no downloader is available
+│   │   │   │           ├── test_file_link_processor_refactored.py (1.8 KB)
+│   │   │   │           │   module __main__: Tests for FileLinkProcessor refactoring
+│   │   │   │           │   class TestFileLinkProcessorRefactored: Test suite for refactored FileLinkProcessor
+│   │   │   │           │   method TestFileLinkProcessorRefactored.test_process_with_no_links: Test processing HTML with no file links
+│   │   │   │           │   method TestFileLinkProcessorRefactored.test_process_with_pdf_link: Test processing HTML with PDF link
+│   │   │   │           │   function test_process_with_no_links: Test processing HTML with no file links
+│   │   │   │           │   function test_process_with_pdf_link: Test processing HTML with PDF link
+│   │   │   │           └── test_task_info_processor_refactored.py (1.1 KB)
+│   │   │   │               module __main__: Tests for TaskInfoProcessor refactoring
+│   │   │   │               class TestTaskInfoProcessorRefactored: Test suite for refactored TaskInfoProcessor
+│   │   │   │               method TestTaskInfoProcessorRefactored.test_extract_task_number: Test extracting task number from header
+│   │   │   │               method TestTaskInfoProcessorRefactored.test_extract_kes_codes: Test extracting KES codes
+│   │   │   │               function test_extract_task_number: Test extracting task number from header
+│   │   │   │               function test_extract_kes_codes: Test extracting KES codes
+│   │   │   ├── services/
+│   │   │   │   └── page_scraping/
+│   │   │   │       └── components/
+│   │   │   │           ├── fakes/
+│   │   │   │           │   └── fake_browser_page.py (1.7 KB)
+│   │   │   │           │       module __main__: Fake browser page implementation for testing
+│   │   │   │           │       class FakeBrowserPage: Fake implementation of a browser page for testing iframe handling
+│   │   │   │           │       method FakeBrowserPage.goto: Navigate to URL - fake implementation
+│   │   │   │           │       method FakeBrowserPage.content: Get page content - fake implementation
+│   │   │   │           │       method FakeBrowserPage.set_content_for_url: Setup content for specific URL
+│   │   │   │           │       method FakeBrowserPage.get_goto_calls: Get all goto calls for verification
+│   │   │   │           │       method FakeBrowserPage.get_content_calls: Get all content calls for verification
+│   │   │   │           │       method FakeBrowserPage.set_current_url: Set current URL for testing
+│   │   │   │           │       function goto: Navigate to URL - fake implementation
+│   │   │   │           │       function content: Get page content - fake implementation
+│   │   │   │           │       function set_content_for_url: Setup content for specific URL
+│   │   │   │           │       function get_goto_calls: Get all goto calls for verification
+│   │   │   │           │       function get_content_calls: Get all content calls for verification
+│   │   │   │           │       function set_current_url: Set current URL for testing
+│   │   │   │           └── test_iframe_handler.py (9.7 KB)
+│   │   │   │               module __main__: Refactored tests for IframeHandler using fakes instead of mocks
+│   │   │   │               class TestIframeHandlerRefactored: Test suite for IframeHandler using fakes
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_with_valid_src: Test handling iframe with valid src attribute using fake
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_without_src: Test handling iframe without src attribute using fake
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_with_navigation_error: Test fallback when iframe navigation fails using fake
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_not_found: Test handling when no iframe is present using fake
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_with_different_base_url: Test iframe URL construction with different base URLs using fake
+│   │   │   │               method TestIframeHandlerRefactored.test_find_questions_iframe_found: Test finding questions iframe when present
+│   │   │   │               method TestIframeHandlerRefactored.test_find_questions_iframe_not_found: Test finding questions iframe when not present
+│   │   │   │               method TestIframeHandlerRefactored.test_find_questions_iframe_wrong_id: Test finding questions iframe with different ID
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_preserves_original_content_on_error: Test that original content is preserved when iframe handling fails using fake
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_with_absolute_src_url: Test handling iframe with absolute URL in src using fake
+│   │   │   │               method TestIframeHandlerRefactored.test_handle_iframe_respects_custom_timeout: Test that custom timeout values are respected using fake
+│   │   │   │               function test_handle_iframe_with_valid_src: Test handling iframe with valid src attribute using fake
+│   │   │   │               function test_handle_iframe_without_src: Test handling iframe without src attribute using fake
+│   │   │   │               function test_handle_iframe_with_navigation_error: Test fallback when iframe navigation fails using fake
+│   │   │   │               function test_handle_iframe_not_found: Test handling when no iframe is present using fake
+│   │   │   │               function test_handle_iframe_with_different_base_url: Test iframe URL construction with different base URLs using fake
+│   │   │   │               function test_find_questions_iframe_found: Test finding questions iframe when present
+│   │   │   │               function test_find_questions_iframe_not_found: Test finding questions iframe when not present
+│   │   │   │               function test_find_questions_iframe_wrong_id: Test finding questions iframe with different ID
+│   │   │   │               function test_handle_iframe_preserves_original_content_on_error: Test that original content is preserved when iframe handling fails using fake
+│   │   │   │               function test_handle_iframe_with_absolute_src_url: Test handling iframe with absolute URL in src using fake
+│   │   │   │               function test_handle_iframe_respects_custom_timeout: Test that custom timeout values are respected using fake
+│   │   │   └── __init__.py (0 B)
+│   │   ├── presentation/
+│   │   │   └── __init__.py (0 B)
+│   │   └── __init__.py (0 B)
+│   ├── __init__.py (0 B)
+│   └── conftest.py (2.9 KB)
 │       function event_loop: Создает экземпляр цикла событий для всей сессии тестов
 │       function subject_info: Фикстура с тестовыми данными для предмета математика
 │       function sample_problem: Фикстура с тестовой задачей
@@ -627,4 +968,6 @@
 ├── analyze_architecture.py (1.8 KB)
 │   function analyze_imports: Анализирует импорты в файле
 │   function check_layer_violations: Проверяет нарушения слоевой архитектуры
-└── test_image_urls.py (1.5 KB)
+├── diagnose.py (1.8 KB)
+│   function run_command: Run command and return output
+└── setup.py (629.0 B)
