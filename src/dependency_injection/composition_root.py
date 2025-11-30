@@ -15,7 +15,12 @@ from src.infrastructure.adapters.external_services.playwright_asset_downloader_a
 from src.infrastructure.adapters.browser_pool_service_adapter import BrowserPoolServiceAdapter
 from src.infrastructure.repositories.sqlalchemy_problem_repository import SQLAlchemyProblemRepository, Base
 from src.infrastructure.processors.html.image_script_processor import ImageScriptProcessor
-from src.infrastructure.processors.html.file_link_processor import FileLinkProcessor
+# УДАЛЕНО: from src.infrastructure.processors.html.file_link_processor import FileLinkProcessor (старая версия)
+# УДАЛЕНО: импорт фабрики
+
+# НОВЫЙ ИМПОРТ: Теперь FileLinkProcessor берется из переименованного файла, который содержит рефакторенный код (CC=A)
+from src.infrastructure.processors.html.file_link_processor import FileLinkProcessor 
+
 from src.infrastructure.processors.html.task_info_processor import TaskInfoProcessor
 from src.infrastructure.processors.html.input_field_remover import InputFieldRemover
 from src.infrastructure.processors.html.mathml_remover import MathMLRemover
@@ -107,7 +112,10 @@ def create_scraping_components(base_run_folder: Path) -> Tuple[ScrapeSubjectUseC
 
     # NEW: Inject asset_downloader_impl into ImageScriptProcessor
     image_processor = ImageScriptProcessor(asset_downloader=asset_downloader_impl)
-    file_processor = FileLinkProcessor()
+    
+    # ИСПРАВЛЕНО: Прямое использование FileLinkProcessor (рефакторенный код)
+    file_processor = FileLinkProcessor() 
+    
     task_info_processor = TaskInfoProcessor()
     input_field_remover = InputFieldRemover()
     mathml_remover = MathMLRemover()

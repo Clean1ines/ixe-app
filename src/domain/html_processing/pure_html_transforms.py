@@ -71,27 +71,39 @@ def _find_header_elements(dom: BeautifulSoup) -> List[Tag]:
     return headers
 
 
+def _find_next_tag_sibling(tag: Tag) -> Tag | None:
+    """Вспомогательная функция: находит ближайший следующий HTML-элемент (Tag), пропуская NavigableString и комментарии."""
+    sib = tag.next_sibling
+    while sib and not isinstance(sib, Tag):
+        sib = sib.next_sibling
+    return sib
+
+
 def _find_body_element_for_header(header: Tag) -> Tag | None:
     """
     Находит элемент, который может быть телом задачи для заданного заголовка.
+    Использует две последовательные, упрощенные стратегии поиска.
     """
-    # ищем ближайший элемент после header, который выглядит как тело блока
-    # допустим, это следующий sibling div
-    body = None
-    sib = header.find_next_sibling()
-    while sib and (not (isinstance(sib, Tag))):
-        sib = sib.find_next_sibling() if hasattr(sib, "find_next_sibling") else None
-    # Проверяем несколько вариантов, остановимся на первом диве
-    while sib and isinstance(sib, Tag) and body is None:
+    # СТРАТЕГИЯ 1: Поиск ближайшего следующего sibling, который является телом
+    sib = _find_next_tag_sibling(header)
+    while sib:
         if sib.name == "div" or "problem-body" in (sib.get("class") or []):
-            body = sib
-            break
-        sib = sib.find_next_sibling()
-    # Если не нашли, попробуем поиск внутри общего контейнера
-    if body is None:
-        possible = header.parent.find_all(class_="problem-body") if header.parent else []
-        body = possible[0] if possible else None
-    return body
+            return sib
+        
+        # Останавливаем поиск по sibling, если встречаем новый заголовок,
+        # чтобы не "перепрыгнуть" в следующую задачу
+        if "problem-header" in (sib.get("class") or []):
+             break 
+             
+        sib = _find_next_tag_sibling(sib)
+        
+    # СТРАТЕГИЯ 2: Поиск внутри родительского контейнера (резервный вариант)
+    if header.parent:
+        possible = header.parent.find_all(class_="problem-body")
+        if possible:
+            return possible[0]
+            
+    return None
 
 
 def _extract_block_pairs_by_qblocks_pattern_with_grouping(dom: BeautifulSoup) -> List[Tuple[str, str]]:

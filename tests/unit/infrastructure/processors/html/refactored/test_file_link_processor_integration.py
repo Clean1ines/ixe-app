@@ -3,14 +3,17 @@ import pytest
 import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock
-from src.infrastructure.processors.html.file_link_processor_refactored import FileLinkProcessorRefactored
+
+# ИСПРАВЛЕНО: Импортируем FileLinkProcessor из нового, чистого модуля
+from src.infrastructure.processors.html.file_link_processor import FileLinkProcessor
 
 class TestFileLinkProcessorRefactoredIntegration:
     """Integration tests for refactored FileLinkProcessor"""
     
     @pytest.fixture
     def processor(self):
-        return FileLinkProcessorRefactored()
+        # Используем новый/переименованный класс
+        return FileLinkProcessor() 
     
     @pytest.fixture
     def mock_context(self):

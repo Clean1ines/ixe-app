@@ -3,8 +3,6 @@ Functional core for scraping progress logic.
 
 This module contains pure functions that determine scraping progress based on
 existing problems and configuration, without any external dependencies or side effects.
-
-Updated to use centralized configuration for base URLs.
 """
 from typing import List, Optional, Any, Dict, Tuple
 from src.domain.models.problem import Problem
@@ -51,57 +49,60 @@ def extract_page_number_from_url(url: str) -> Optional[int]:
     except (ValueError, IndexError):
         return None
 
+def _get_highest_scraped_page(existing_problems: List[Problem]) -> Optional[int]:
+    """
+    Чистая функция для извлечения максимального 1-based номера страницы
+    из списка существующих проблем.
+    """
+    page_numbers = []
+    for problem in existing_problems:
+        # Проверяем наличие атрибута и его значение перед вызовом extract_page_number_from_url
+        if hasattr(problem, 'source_url') and problem.source_url:
+            page_num = extract_page_number_from_url(problem.source_url)
+            if page_num is not None:
+                page_numbers.append(page_num)
+
+    return max(page_numbers) if page_numbers else None
+
+
 def determine_next_page(
-    existing_problems: List[Problem], 
+    existing_problems: List[Problem],
     config: ScrapingConfig,
     highest_known_page: Optional[int] = None
 ) -> int:
     """
     Determine the next page to scrape based on existing problems and configuration.
     
-    This is a pure function with no side effects - it only depends on its inputs.
-    
-    Args:
-        existing_problems: List of problems already in the database
-        config: Scraping configuration
-        highest_known_page: Optional highest page number known to exist (from UI pager)
-        
     Returns:
-        Page number to start scraping from
+        Page number to start scraping from (1-based)
     """
-    # If force restart is enabled, always start from page 1
+    # 1. СТРАТЕГИЯ: Принудительный перезапуск
     if config.force_restart:
         return 1
     
-    # If start_page is explicitly set in config, use it
+    # 2. СТРАТЕГИЯ: Явно заданная страница начала
     if config.start_page is not None and config.start_page != "init":
         try:
             return int(config.start_page)
         except (ValueError, TypeError):
-            # If start_page is not a valid number, fall through
+            # Если невалидное значение, игнорируем его и продолжаем
             pass
-    
-    # If no problems exist, start from page 1
+
+    # 3. СТРАТЕГИЯ: Нет существующих проблем
     if not existing_problems:
         return 1
+
+    # 4. СТРАТЕГИЯ: Продолжение скрейпинга (основной поток)
+    highest_scraped_page = _get_highest_scraped_page(existing_problems)
     
-    # Extract page numbers from existing problems' source URLs
-    page_numbers = []
-    for problem in existing_problems:
-        if hasattr(problem, 'source_url') and problem.source_url:
-            page_num = extract_page_number_from_url(problem.source_url)
-            if page_num is not None:
-                page_numbers.append(page_num)
-    
-    # If we have page numbers, find the highest and start from the next one
-    if page_numbers:
-        highest_scraped_page = max(page_numbers)
+    if highest_scraped_page is not None:
+        next_page = highest_scraped_page + 1
         
-        # If we know the highest page that exists, don't go beyond it
+        # Учет известной максимальной страницы
         if highest_known_page is not None and highest_scraped_page >= highest_known_page:
-            return highest_known_page  # Return the last known page
-        
-        return highest_scraped_page + 1
+            return highest_known_page 
+            
+        return next_page
     
-    # Fallback: start from page 1
-    return 1
+    # 5. СТРАТЕГИЯ: Не удалось найти страницы (нет source_url или ошибка парсинга)
+    return 1 # Fallback, если не смогли найти номер страницы ни в одной проблеме
