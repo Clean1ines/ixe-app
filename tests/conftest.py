@@ -8,6 +8,9 @@ from datetime import datetime
 # Добавляем src в путь для импортов
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+# <-- ВАЖНОЕ ДОБАВЛЕНИЕ: ИМПОРТ НАШИХ FAKES
+from tests.fakes import FakeProblemRepository, FakeBrowserService
+
 try:
     from src.domain.value_objects.scraping.subject_info import SubjectInfo
     from src.domain.models.problem import Problem
@@ -69,13 +72,17 @@ def test_run_folder(tmp_path):
     return tmp_path / "test_assets"
 
 @pytest.fixture
-def mock_dependencies(subject_info):
-    """Фикстура с моками зависимостей для тестов"""
+def test_dependencies():
+    """
+    Фикстура с зависимостями для тестов, использующая Fakes 
+    (для проверки состояния) и Mocks (для проверки взаимодействия).
+    ЗАМЕНЯЕТ СТАРУЮ 'test_dependencies'.
+    """
     return {
         'page_scraping_service': AsyncMock(),
-        'problem_repository': AsyncMock(),
+        'problem_repository': FakeProblemRepository(), # <-- FAKE
         'problem_factory': MagicMock(),
-        'browser_service': AsyncMock(),
+        'browser_service': FakeBrowserService(),      # <-- FAKE
         'progress_service': AsyncMock(),
         'progress_reporter': AsyncMock(),
         'asset_downloader_impl': AsyncMock()

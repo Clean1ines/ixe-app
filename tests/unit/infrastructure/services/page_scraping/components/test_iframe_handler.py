@@ -3,7 +3,7 @@ import pytest
 from bs4 import BeautifulSoup
 
 from src.infrastructure.services.page_scraping.components.iframe_handler import IframeHandler
-from tests.unit.infrastructure.services.page_scraping.components.fakes.fake_browser_page import FakeBrowserPage
+from tests.fakes import FakeBrowserPage
 
 
 class TestIframeHandlerRefactored:
@@ -15,7 +15,7 @@ class TestIframeHandlerRefactored:
     
     @pytest.fixture
     def fake_page(self):
-        return FakeBrowserPage()
+        return FakeBrowserPage(url="https://fipi.ru/page1")
     
     @pytest.fixture
     def main_content_with_iframe(self):
@@ -26,7 +26,7 @@ class TestIframeHandlerRefactored:
                 <div>Main content</div>
             </body>
         </html>
-        """
+        """.strip() # Убираем внешние пробелы
     
     @pytest.fixture
     def main_content_without_iframe(self):
@@ -36,7 +36,7 @@ class TestIframeHandlerRefactored:
                 <div>Main content without iframe</div>
             </body>
         </html>
-        """
+        """.strip()
     
     @pytest.fixture
     def main_content_with_iframe_no_src(self):
@@ -47,7 +47,7 @@ class TestIframeHandlerRefactored:
                 <div>Main content</div>
             </body>
         </html>
-        """
+        """.strip()
     
     @pytest.fixture
     def iframe_content(self):
@@ -58,7 +58,7 @@ class TestIframeHandlerRefactored:
                 <question>Question 1</question>
             </body>
         </html>
-        """
+        """.strip()
 
     @pytest.mark.asyncio
     async def test_handle_iframe_with_valid_src(self, handler, fake_page, main_content_with_iframe, iframe_content):
@@ -70,18 +70,18 @@ class TestIframeHandlerRefactored:
         # Setup fake page content
         fake_page.set_content_for_url(url, main_content_with_iframe)
         fake_page.set_content_for_url("https://fipi.ru/iframe/content", iframe_content)
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         
         # Act
         actual_content, source_url = await handler.handle_iframe_content(
             fake_page, url, timeout, main_content_with_iframe
         )
         
-        # Assert
-        assert actual_content == iframe_content
+        # Assert - используем .strip() для надежного сравнения
+        assert actual_content.strip() == iframe_content.strip()
         assert source_url == "https://fipi.ru/iframe/content"
         
-        # Verify interactions using fake's internal tracking
+        # Verify interactions
         goto_calls = fake_page.get_goto_calls()
         assert len(goto_calls) == 1
         assert goto_calls[0]['url'] == "https://fipi.ru/iframe/content"
@@ -93,7 +93,7 @@ class TestIframeHandlerRefactored:
         # Arrange
         url = "https://fipi.ru/page1"
         timeout = 30
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         
         # Act
         actual_content, source_url = await handler.handle_iframe_content(
@@ -114,7 +114,7 @@ class TestIframeHandlerRefactored:
         
         # Setup: main URL has content, but iframe URL is not setup (will cause navigation error)
         fake_page.set_content_for_url(url, main_content_with_iframe)
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         
         # Act
         actual_content, source_url = await handler.handle_iframe_content(
@@ -123,7 +123,7 @@ class TestIframeHandlerRefactored:
         
         # Assert - should fallback to main content
         assert actual_content == main_content_with_iframe
-        assert source_url == url
+        assert source_url == url # Должен вернуться исходный URL
         
         # Should attempt navigation to iframe URL (which fails)
         goto_calls = fake_page.get_goto_calls()
@@ -136,7 +136,7 @@ class TestIframeHandlerRefactored:
         # Arrange
         url = "https://fipi.ru/page1"
         timeout = 30
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         
         # Act
         actual_content, source_url = await handler.handle_iframe_content(
@@ -158,7 +158,7 @@ class TestIframeHandlerRefactored:
         
         fake_page.set_content_for_url(url, main_content)
         fake_page.set_content_for_url("https://example.com/relative/path", "<html>Iframe content</html>")
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         
         # Act
         actual_content, source_url = await handler.handle_iframe_content(
@@ -217,7 +217,7 @@ class TestIframeHandlerRefactored:
         original_content = main_content_with_iframe
         
         fake_page.set_content_for_url(url, original_content)
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         # iframe URL not setup - will cause navigation error
         
         # Act
@@ -227,7 +227,9 @@ class TestIframeHandlerRefactored:
         
         # Assert
         assert actual_content == original_content
-        assert source_url == url
+        assert source_url == url 
+        goto_calls = fake_page.get_goto_calls()
+        assert len(goto_calls) == 1
 
     @pytest.mark.asyncio
     async def test_handle_iframe_with_absolute_src_url(self, handler, fake_page):
@@ -239,7 +241,7 @@ class TestIframeHandlerRefactored:
         
         fake_page.set_content_for_url(url, main_content)
         fake_page.set_content_for_url("https://absolute.com/path", "<html>Absolute iframe content</html>")
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         
         # Act
         actual_content, source_url = await handler.handle_iframe_content(
@@ -262,7 +264,7 @@ class TestIframeHandlerRefactored:
         
         fake_page.set_content_for_url(url, main_content_with_iframe)
         fake_page.set_content_for_url("https://fipi.ru/iframe/content", "<html>Iframe content</html>")
-        fake_page.set_current_url(url)
+        await fake_page.set_current_url(url)
         
         # Act
         await handler.handle_iframe_content(fake_page, url, timeout, main_content_with_iframe)

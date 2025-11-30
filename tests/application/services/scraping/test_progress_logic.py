@@ -10,7 +10,7 @@ from src.application.services.scraping.progress_logic import determine_next_page
 from src.application.value_objects.scraping.scraping_config import ScrapingConfig, ScrapingMode
 from src.domain.value_objects.scraping.subject_info import SubjectInfo
 from src.domain.models.problem import Problem
-from tests.application.services.scraping.fakes.fake_problem_repository import FakeProblemRepository
+from tests.fakes import FakeProblemRepository
 
 def create_test_problem(problem_id, subject_name, source_url):
     """Helper to create test problems with consistent data"""

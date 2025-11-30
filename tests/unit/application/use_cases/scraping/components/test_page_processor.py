@@ -11,7 +11,7 @@ from src.domain.models.problem import Problem
 
 
 @pytest.fixture
-def mock_dependencies():
+def test_dependencies():
     return {
         'page_scraping_service': AsyncMock(),
         'problem_repository': AsyncMock(),
@@ -44,10 +44,10 @@ def base_run_folder():
 
 class TestPageProcessor:
     @pytest.mark.asyncio
-    async def test_process_page_success(self, mock_dependencies, subject_info, scraping_config, base_run_folder):
+    async def test_process_page_success(self, test_dependencies, subject_info, scraping_config, base_run_folder):
         """Test successful page processing."""
         # Arrange
-        processor = PageProcessor(**mock_dependencies)
+        processor = PageProcessor(**test_dependencies)
         page_num = 1
         
         # Mock page scraping result
@@ -57,8 +57,8 @@ class TestPageProcessor:
         ]
         mock_scraping_result = PageScrapingResult(problems=mock_problems, assets_downloaded=3)
         
-        mock_dependencies['page_scraping_service'].scrape_page.return_value = mock_scraping_result
-        mock_dependencies['problem_repository'].save.return_value = None
+        test_dependencies['page_scraping_service'].scrape_page.return_value = mock_scraping_result
+        test_dependencies['problem_repository'].save.return_value = None
 
         # Act
         result = await processor.process_page(page_num, subject_info, scraping_config, base_run_folder)
@@ -71,19 +71,19 @@ class TestPageProcessor:
         assert result.error is None
         assert result.page_duration_seconds > 0
         
-        mock_dependencies['page_scraping_service'].scrape_page.assert_awaited_once()
-        assert mock_dependencies['problem_repository'].save.await_count == 2
-        mock_dependencies['progress_reporter'].report_page_progress.assert_called_once()
+        test_dependencies['page_scraping_service'].scrape_page.assert_awaited_once()
+        assert test_dependencies['problem_repository'].save.await_count == 2
+        test_dependencies['progress_reporter'].report_page_progress.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_process_page_empty_result(self, mock_dependencies, subject_info, scraping_config, base_run_folder):
+    async def test_process_page_empty_result(self, test_dependencies, subject_info, scraping_config, base_run_folder):
         """Test page processing with empty result."""
         # Arrange
-        processor = PageProcessor(**mock_dependencies)
+        processor = PageProcessor(**test_dependencies)
         page_num = 1
         
         mock_scraping_result = PageScrapingResult(problems=[], assets_downloaded=0)
-        mock_dependencies['page_scraping_service'].scrape_page.return_value = mock_scraping_result
+        test_dependencies['page_scraping_service'].scrape_page.return_value = mock_scraping_result
 
         # Act
         result = await processor.process_page(page_num, subject_info, scraping_config, base_run_folder)
@@ -95,18 +95,18 @@ class TestPageProcessor:
         assert result.assets_downloaded == 0
         assert result.error is None
         
-        mock_dependencies['page_scraping_service'].scrape_page.assert_awaited_once()
-        mock_dependencies['problem_repository'].save.assert_not_awaited()
-        mock_dependencies['progress_reporter'].report_page_progress.assert_not_called()
+        test_dependencies['page_scraping_service'].scrape_page.assert_awaited_once()
+        test_dependencies['problem_repository'].save.assert_not_awaited()
+        test_dependencies['progress_reporter'].report_page_progress.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_process_page_error(self, mock_dependencies, subject_info, scraping_config, base_run_folder):
+    async def test_process_page_error(self, test_dependencies, subject_info, scraping_config, base_run_folder):
         """Test page processing with error."""
         # Arrange
-        processor = PageProcessor(**mock_dependencies)
+        processor = PageProcessor(**test_dependencies)
         page_num = 1
         
-        mock_dependencies['page_scraping_service'].scrape_page.side_effect = Exception("Scraping failed")
+        test_dependencies['page_scraping_service'].scrape_page.side_effect = Exception("Scraping failed")
 
         # Act
         result = await processor.process_page(page_num, subject_info, scraping_config, base_run_folder)
@@ -118,4 +118,4 @@ class TestPageProcessor:
         assert result.assets_downloaded == 0
         assert "Scraping failed" in result.error
         
-        mock_dependencies['progress_reporter'].report_page_error.assert_called_once()
+        test_dependencies['progress_reporter'].report_page_error.assert_called_once()
